@@ -1,0 +1,31 @@
+﻿{
+  "allure": {
+    "directory": "allure-results",
+    "links": [
+      "https://example.org/{issue}",
+      "https://example.org/{tms}"
+    ]
+  },
+  "specflow": {
+    "stepArguments": {
+      "convertToParameters": true,
+      "paramNameRegex": "",
+      "paramValueRegex": ""
+    },
+    "grouping": {
+      "suites": {
+        "parentSuite": "^ParentSuite",
+        "suite": "^Suite",
+        "subSuite": "^SubSuite"
+      },
+      "behaviors": {
+        "epic": "^Epic",
+        "story": "^Story(?:.*)"
+      }
+    },
+    "labels": {
+      "owner": "^author",
+      "severity": "^severity"
+    }
+  }
+}

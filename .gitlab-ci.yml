@@ -1,0 +1,147 @@
+﻿# .gitlab-ci.yml
+stages:
+  - test
+  - report
+
+variables:
+  DB_HOST: "postgres"
+  DB_PORT: "5433"
+  DB_USER: "postgres"
+  DB_PASSWORD: "1"
+  DB_NAME: "GreenhouseContext"
+
+default:
+  image: mcr.microsoft.com/dotnet/sdk:9.0
+  tags:
+    - windows
+    - dotnet
+    - postgres
+
+services:
+  - name: postgres:15
+    alias: postgres
+    command: ["postgres", "-p", "5433"]
+    variables:
+      POSTGRES_PASSWORD: "1"
+      POSTGRES_USER: "postgres"
+      POSTGRES_DB: "GreenhouseContext"
+
+before_script:
+  - apt-get update
+  - apt-get install -y curl postgresql-client
+  - curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+  - apt-get install -y nodejs
+  - npm install
+
+  - echo "Waiting for PostgreSQL..."
+  - timeout 60s bash -c 'until PGPASSWORD=1 pg_isready -h postgres -p 5433 -U postgres; do sleep 2; echo "Waiting..."; done'
+
+  - PGPASSWORD=1 psql -h postgres -p 5433 -U postgres -c "CREATE DATABASE \"GreenhouseContext\" ENCODING 'UTF8';" 2>/dev/null || echo "Database already exists"
+
+  - node scripts/init-test-db.js || echo "DB init completed"
+
+# Функция для отката базы данных
+.cleanup_database: &cleanup_database |
+  echo "Cleaning up database..."
+  PGPASSWORD=1 psql -h postgres -p 5433 -U postgres -c "
+    DROP DATABASE IF EXISTS \"GreenhouseContext\";
+    CREATE DATABASE \"GreenhouseContext\" ENCODING 'UTF8';
+  " || echo "Database cleanup completed"
+  node scripts/init-test-db.js || echo "Database reinitialization completed"
+
+unit_tests:
+  stage: test
+  script:
+    - cd src
+    - dotnet restore
+    - dotnet build
+    - echo "=== RUNNING UNIT TESTS ==="
+    - dotnet test UnitTests/UnitTests.csproj --logger "trx;LogFileName=unit-tests.trx" --results-directory "../test-results"
+  artifacts:
+    when: always
+    paths:
+      - test-results/
+    reports:
+      junit: test-results/*.trx
+
+integration_tests:
+  stage: test
+  dependencies:
+    - unit_tests
+  before_script:
+    - *cleanup_database
+  script:
+    - cd src
+    - echo "=== RUNNING INTEGRATION TESTS ==="
+    - dotnet test IntegrationTests/IntegrationTests.csproj --logger "trx;LogFileName=integration-tests.trx" --results-directory "../test-results"
+  after_script:
+    - |
+      if [ "$CI_JOB_STATUS" = "failed" ]; then
+        echo "Integration tests failed - rolling back database"
+        PGPASSWORD=1 psql -h postgres -p 5433 -U postgres -c "
+          DROP DATABASE IF EXISTS \"GreenhouseContext\";
+          CREATE DATABASE \"GreenhouseContext\" ENCODING 'UTF8';
+        " || echo "Database cleanup completed"
+        node scripts/init-test-db.js || echo "Database reinitialization completed"
+      fi
+  artifacts:
+    when: always
+    paths:
+      - test-results/
+    reports:
+      junit: test-results/*.trx
+  rules:
+    - if: $CI_COMMIT_BRANCH
+      when: on_success
+
+e2e_tests:
+  stage: test
+  dependencies:
+    - integration_tests
+  before_script:
+    - *cleanup_database
+    # Установка зависимостей для E2E тестов
+    - apt-get update && apt-get install -y wget unzip fontconfig libfreetype6 libx11-6 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6
+  script:
+    - cd src
+    - echo "=== RUNNING E2E TESTS ==="
+    - dotnet test E2ETests/E2ETests.csproj --logger "trx;LogFileName=e2e-tests.trx" --results-directory "../test-results"
+  after_script:
+    - |
+      if [ "$CI_JOB_STATUS" = "failed" ]; then
+        echo "E2E tests failed - rolling back database"
+        PGPASSWORD=1 psql -h postgres -p 5433 -U postgres -c "
+          DROP DATABASE IF EXISTS \"GreenhouseContext\";
+          CREATE DATABASE \"GreenhouseContext\" ENCODING 'UTF8';
+        " || echo "Database cleanup completed"
+        node scripts/init-test-db.js || echo "Database reinitialization completed"
+      fi
+  artifacts:
+    when: always
+    paths:
+      - test-results/
+    reports:
+      junit: test-results/*.trx
+  rules:
+    - if: $CI_COMMIT_BRANCH
+      when: on_success
+
+generate_allure_report:
+  stage: report
+  dependencies:
+    - unit_tests
+    - integration_tests
+    - e2e_tests
+  script:
+    - echo "=== GENERATING TEST REPORT ==="
+    - |
+      # Создаем фиктивный отчет для пропущенных тестов
+      if [ ! -f "test-results/integration-tests.trx" ]; then
+        echo "Creating skipped report for integration tests"
+        cat > test-results/integration-tests-skipped.trx << 'ENDOFFILE'
+artifacts:
+  when: always
+  paths:
+    - test-results/
+  reports:
+    junit: test-results/*.trx

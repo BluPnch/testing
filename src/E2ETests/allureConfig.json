@@ -1,0 +1,19 @@
+﻿{
+  "allure": {
+    "directory": "allure-results",
+    "links": [
+      "https://github.com/greenhouse-project/issues/{issue}",
+      "https://github.com/greenhouse-project/tms/{tms}"
+    ]
+  },
+  "labels": {
+    "layer": ["e2e", "api"],
+    "feature": ["administrator", "client-management", "role-management"],
+    "story": ["login", "view-clients", "assign-roles"]
+  },
+  "environment": {
+    "test_type": "E2E",
+    "framework": "xUnit",
+    "allure_version": "2.12.1"
+  }
+}

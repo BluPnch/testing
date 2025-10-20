@@ -1,0 +1,30 @@
+﻿version: '3.8'
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: GreenhouseContext
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1
+    ports:
+      - "5433:5433"  # Явно указываем порт 5433
+    command: ["postgres", "-p", "5433"]  # Запускаем на порту 5433
+
+  test-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5433
+      DB_USER: postgres
+      DB_PASSWORD: 1
+      DB_NAME: GreenhouseContext
+      NODE_ENV: development
+      DATABASE_URL: postgresql://postgres:1@postgres:5433/GreenhouseContext
+    depends_on:
+      - postgres
+    volumes:
+      - ./allure-results:/app/allure-results
+      - ./test-results:/app/test-results
+      - ./scripts/.env:/app/.env  

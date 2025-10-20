@@ -1,0 +1,18 @@
+﻿FROM mcr.microsoft.com/dotnet/sdk:9.0
+
+# Установка Node.js
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs
+
+# Установка Allure
+RUN apt-get update && apt-get install -y default-jre curl \
+    && curl -o allure-2.24.0.tgz -Ls https://github.com/allure-framework/allure2/releases/download/2.24.0/allure-2.24.0.tgz \
+    && tar -zxvf allure-2.24.0.tgz -C /opt/ \
+    && ln -s /opt/allure-2.24.0/bin/allure /usr/bin/allure
+
+WORKDIR /app
+COPY . .
+
+RUN npm install
+
+CMD ["npm", "run", "test:all"]

@@ -1,0 +1,13 @@
+obj/
+bin/
+Migrations/
+wwwroot/
+**/.idea
+.idea/
+*.xml
+*.user
+*.bkp
+*.log
+node_modules/
+allure-report/
+packages/

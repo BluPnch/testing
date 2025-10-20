@@ -1,0 +1,119 @@
+﻿<Window x:Class="Web.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Web"
+        xmlns:viewmodels="clr-namespace:Web.ViewModels"
+        mc:Ignorable="d"
+        Title="Greenhouse Control System" Height="600" Width="800"
+        WindowStartupLocation="CenterScreen">
+    
+    <Window.Resources>
+        <Style TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Margin" Value="10"/>
+        </Style>
+        
+        <Style TargetType="Button">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="15,8"/>
+            <Setter Property="Margin" Value="10"/>
+            <Setter Property="Background" Value="#2196F3"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                            VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#1976D2"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Status Panel -->
+        <Border Grid.Row="0" 
+                Background="#F5F5F5" 
+                CornerRadius="8" 
+                Padding="20" 
+                Margin="0,0,0,20">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="Temperature" FontWeight="Bold"/>
+                    <TextBlock Text="{Binding Temperature, StringFormat={}{0:F1}°C}"/>
+                </StackPanel>
+                
+                <StackPanel Grid.Column="1">
+                    <TextBlock Text="Humidity" FontWeight="Bold"/>
+                    <TextBlock Text="{Binding Humidity, StringFormat={}{0:F1}%}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Control Panel -->
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" 
+                    Background="#E3F2FD" 
+                    CornerRadius="8" 
+                    Margin="0,0,0,10">
+                <Button Command="{Binding ToggleVentilationCommand}"
+                        Content="{Binding IsVentilationActive, Converter={StaticResource BoolToTextConverter}, ConverterParameter='Ventilation|Ventilation Active'}"/>
+            </Border>
+
+            <Border Grid.Row="1" 
+                    Background="#E3F2FD" 
+                    CornerRadius="8" 
+                    Margin="0,10">
+                <Button Command="{Binding ToggleHeatingCommand}"
+                        Content="{Binding IsHeatingActive, Converter={StaticResource BoolToTextConverter}, ConverterParameter='Heating|Heating Active'}"/>
+            </Border>
+
+            <Border Grid.Row="2" 
+                    Background="#E3F2FD" 
+                    CornerRadius="8" 
+                    Margin="0,10,0,0">
+                <Button Command="{Binding ToggleIrrigationCommand}"
+                        Content="{Binding IsIrrigationActive, Converter={StaticResource BoolToTextConverter}, ConverterParameter='Irrigation|Irrigation Active'}"/>
+            </Border>
+        </Grid>
+
+        <!-- Footer -->
+        <TextBlock Grid.Row="2" 
+                   Text="Greenhouse Control System" 
+                   HorizontalAlignment="Center" 
+                   Margin="0,20,0,0"
+                   Foreground="#757575"/>
+    </Grid>
+</Window>
