@@ -118,19 +118,13 @@ e2e_tests:
 
 generate_report:
   stage: report
-  needs:
-    - job: unit_tests
-      artifacts: true
-    - job: integration_tests
-      artifacts: true
-    - job: e2e_tests
-      artifacts: true
+  needs: ["unit_tests", "integration_tests", "e2e_tests"]
   script:
     - echo "=== TEST EXECUTION SUMMARY ==="
-    - echo "Build: ✅ SUCCESS"
-    - echo "Unit Tests: ✅ COMPLETED"
-    - echo "Integration Tests: ✅ COMPLETED"
-    - echo "E2E Tests: ✅ COMPLETED"
+    - echo "Build: SUCCESS"
+    - echo "Unit Tests: COMPLETED"
+    - echo "Integration Tests: COMPLETED"
+    - echo "E2E Tests: COMPLETED"
     - echo "=== CHECK ARTIFACTS FOR DETAILED RESULTS ==="
   artifacts:
     when: always
