@@ -1,6 +1,9 @@
 ﻿# .gitlab-ci.yml
 stages:
-  - test
+  - build
+  - test_unit
+  - test_integration
+  - test_e2e
   - report
 
 variables:
@@ -49,14 +52,27 @@ before_script:
   " || echo "Database cleanup completed"
   node scripts/init-test-db.js || echo "Database reinitialization completed"
 
-unit_tests:
-  stage: test
+build_solution:
+  stage: build
   script:
     - cd src
+    - echo "=== BUILDING SOLUTION ==="
     - dotnet restore
-    - dotnet build
+    - dotnet build --verbosity normal
+    - echo "=== BUILD COMPLETED SUCCESSFULLY ==="
+  artifacts:
+    paths:
+      - src/**/bin/
+      - src/**/obj/
+    expire_in: 1 hour
+
+unit_tests:
+  stage: test_unit
+  needs: ["build_solution"]  # Зависит от сборки
+  script:
+    - cd src
     - echo "=== RUNNING UNIT TESTS ==="
-    - dotnet test UnitTests/UnitTests.csproj --logger "trx;LogFileName=unit-tests.trx" --results-directory "../test-results"
+    - dotnet test UnitTests/UnitTests.csproj --no-build --logger "trx;LogFileName=unit-tests.trx" --results-directory "../test-results"
   artifacts:
     when: always
     paths:
@@ -65,16 +81,14 @@ unit_tests:
       junit: test-results/*.trx
 
 integration_tests:
-  stage: test
-  dependencies: []  # Убрать зависимости - они не работают как ожидается
+  stage: test_integration
+  needs: ["unit_tests"]  # Зависит от unit тестов
   before_script:
     - *cleanup_database
   script:
     - cd src
-    - dotnet restore  # Добавить restore и build
-    - dotnet build
     - echo "=== RUNNING INTEGRATION TESTS ==="
-    - dotnet test IntegrationTests/IntegrationTests.csproj --logger "trx;LogFileName=integration-tests.trx" --results-directory "../test-results"
+    - dotnet test IntegrationTests/IntegrationTests.csproj --no-build --logger "trx;LogFileName=integration-tests.trx" --results-directory "../test-results"
   artifacts:
     when: always
     paths:
@@ -84,18 +98,16 @@ integration_tests:
   allow_failure: false
 
 e2e_tests:
-  stage: test
-  dependencies: []  # Убрать зависимости
+  stage: test_e2e
+  needs: ["integration_tests"]  # Зависит от integration тестов
   before_script:
     - *cleanup_database
     # Установка зависимостей для E2E тестов
     - apt-get update && apt-get install -y wget unzip fontconfig libfreetype6 libx11-6 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6
   script:
     - cd src
-    - dotnet restore  # Добавить restore и build
-    - dotnet build
     - echo "=== RUNNING E2E TESTS ==="
-    - dotnet test E2ETests/E2ETests.csproj --logger "trx;LogFileName=e2e-tests.trx" --results-directory "../test-results"
+    - dotnet test E2ETests/E2ETests.csproj --no-build --logger "trx;LogFileName=e2e-tests.trx" --results-directory "../test-results"
   artifacts:
     when: always
     paths:
@@ -106,9 +118,20 @@ e2e_tests:
 
 generate_report:
   stage: report
+  needs:
+    - job: unit_tests
+      artifacts: true
+    - job: integration_tests
+      artifacts: true
+    - job: e2e_tests
+      artifacts: true
   script:
-    - echo "=== TEST EXECUTION COMPLETED ==="
-    - echo "Check the artifacts for detailed test results"
+    - echo "=== TEST EXECUTION SUMMARY ==="
+    - echo "Build: ✅ SUCCESS"
+    - echo "Unit Tests: ✅ COMPLETED"
+    - echo "Integration Tests: ✅ COMPLETED"
+    - echo "E2E Tests: ✅ COMPLETED"
+    - echo "=== CHECK ARTIFACTS FOR DETAILED RESULTS ==="
   artifacts:
     when: always
     paths:
