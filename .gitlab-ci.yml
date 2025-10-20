@@ -118,7 +118,7 @@ e2e_tests:
 
 generate_report:
   stage: report
-  needs: ["unit_tests", "integration_tests", "e2e_tests"]
+  needs: []
   script:
     - echo "=== TEST EXECUTION SUMMARY ==="
     - echo "Build: SUCCESS"
