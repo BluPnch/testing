@@ -12,7 +12,6 @@ env:
   DB_USER: postgres
   DB_PASSWORD: 1
   DB_NAME: GreenhouseContext
-  DATABASE_URL: postgresql://postgres:1@localhost:5433/GreenhouseContext
 
 jobs:
   build:
@@ -46,9 +45,9 @@ jobs:
         with:
           node-version: '18.x'
 
-      - name: Install dependencies
+      - name: Install Node.js dependencies
         run: |
-          npm install
+          npm install dotenv pg
 
       - name: Wait for PostgreSQL
         run: |
@@ -131,25 +130,31 @@ jobs:
         with:
           dotnet-version: '9.0.x'
 
-      - name: Setup Node.js
+      - name: Setup Node.js and install dependencies
         uses: actions/setup-node@v4
         with:
           node-version: '18.x'
 
+      - name: Install Node.js dependencies
+        run: |
+          npm install dotenv pg
+
       - name: Cleanup and initialize database
         run: |
           echo "Cleaning up database..."
-          PGPASSWORD=1 psql -h localhost -p 5433 -U postgres -c "
-            SELECT pg_terminate_backend(pid) 
+          # Отключаем все соединения с базой
+          PGPASSWORD=1 psql -h localhost -p 5433 -U postgres -d postgres -c "
+            SELECT pg_terminate_backend(pg_stat_activity.pid) 
             FROM pg_stat_activity 
-            WHERE datname = 'GreenhouseContext' AND pid <> pg_backend_pid();
-          " 2>/dev/null || true
+            WHERE pg_stat_activity.datname = 'GreenhouseContext' 
+            AND pid <> pg_backend_pid();
+          " 2>/dev/null || echo "No connections to terminate"
           
-          PGPASSWORD=1 psql -h localhost -p 5433 -U postgres -c "
-            DROP DATABASE IF EXISTS \"GreenhouseContext\";
-            CREATE DATABASE \"GreenhouseContext\" ENCODING 'UTF8';
-          " || echo "Database recreated"
+          # Удаляем и создаем базу данных в отдельной сессии
+          PGPASSWORD=1 psql -h localhost -p 5433 -U postgres -d postgres -c "DROP DATABASE IF EXISTS \"GreenhouseContext\";"
+          PGPASSWORD=1 psql -h localhost -p 5433 -U postgres -d postgres -c "CREATE DATABASE \"GreenhouseContext\" ENCODING 'UTF8';"
           
+          echo "Database recreated successfully"
           node scripts/init-test-db.js
 
       - name: Run integration tests
@@ -188,7 +193,16 @@ jobs:
         with:
           dotnet-version: '9.0.x'
 
-      - name: Install E2E dependencies
+      - name: Setup Node.js and install dependencies
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+
+      - name: Install Node.js dependencies
+        run: |
+          npm install dotenv pg
+
+      - name: Install E2E system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y wget unzip fontconfig libfreetype6 libx11-6 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6
@@ -196,17 +210,19 @@ jobs:
       - name: Cleanup and initialize database
         run: |
           echo "Cleaning up database..."
-          PGPASSWORD=1 psql -h localhost -p 5433 -U postgres -c "
-            SELECT pg_terminate_backend(pid) 
+          # Отключаем все соединения с базой
+          PGPASSWORD=1 psql -h localhost -p 5433 -U postgres -d postgres -c "
+            SELECT pg_terminate_backend(pg_stat_activity.pid) 
             FROM pg_stat_activity 
-            WHERE datname = 'GreenhouseContext' AND pid <> pg_backend_pid();
-          " 2>/dev/null || true
+            WHERE pg_stat_activity.datname = 'GreenhouseContext' 
+            AND pid <> pg_backend_pid();
+          " 2>/dev/null || echo "No connections to terminate"
           
-          PGPASSWORD=1 psql -h localhost -p 5433 -U postgres -c "
-            DROP DATABASE IF EXISTS \"GreenhouseContext\";
-            CREATE DATABASE \"GreenhouseContext\" ENCODING 'UTF8';
-          " || echo "Database recreated"
+          # Удаляем и создаем базу данных в отдельной сессии
+          PGPASSWORD=1 psql -h localhost -p 5433 -U postgres -d postgres -c "DROP DATABASE IF EXISTS \"GreenhouseContext\";"
+          PGPASSWORD=1 psql -h localhost -p 5433 -U postgres -d postgres -c "CREATE DATABASE \"GreenhouseContext\" ENCODING 'UTF8';"
           
+          echo "Database recreated successfully"
           node scripts/init-test-db.js
 
       - name: Run E2E tests
