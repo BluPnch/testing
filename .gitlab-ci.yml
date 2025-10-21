@@ -7,11 +7,13 @@ stages:
   - report
 
 variables:
-  DB_HOST: "postgres"
+  DB_HOST: "localhost"
   DB_PORT: "5433"
   DB_USER: "postgres"
   DB_PASSWORD: "1"
   DB_NAME: "GreenhouseContext"
+  DATABASE_URL: "postgresql://postgres:1@localhost:5433/GreenhouseContext"
+
 
 default:
   image: mcr.microsoft.com/dotnet/sdk:9.0
@@ -22,8 +24,7 @@ default:
 
 services:
   - name: postgres:15
-    alias: postgres
-    command: ["postgres", "-p", "5433"]
+    command: ["postgres", "-p", "5433", "-c", "listen_addresses=*"]
     variables:
       POSTGRES_PASSWORD: "1"
       POSTGRES_USER: "postgres"
@@ -31,27 +32,37 @@ services:
 
 before_script:
   - apt-get update
-  - apt-get install -y curl postgresql-client
-  - curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
-  - apt-get install -y nodejs
+  - apt-get install -y curl postgresql-client nodejs net-tools
   - npm install
 
-  - echo "Waiting for PostgreSQL..."
-  - timeout 60s bash -c 'until PGPASSWORD=1 pg_isready -h postgres -p 5433 -U postgres; do sleep 2; echo "Waiting..."; done'
-
-  - PGPASSWORD=1 psql -h postgres -p 5433 -U postgres -c "CREATE DATABASE \"GreenhouseContext\" ENCODING 'UTF8';" 2>/dev/null || echo "Database already exists"
-
-  - node scripts/init-test-db.js || echo "DB init completed"
+  # Диагностика сети
+  - echo "=== NETWORK DIAGNOSTICS ==="
+  - hostname
+  - cat /etc/hosts
+  - netstat -tulpn | grep 5433 || echo "PostgreSQL not found on 5433"
+  
+  # Проверка разных хостов
+  - echo "Testing connection to different hosts:"
+  - PGPASSWORD=1 pg_isready -h localhost -p 5433 -U postgres && echo "✅ localhost works" || echo "❌ localhost fails"
+  - PGPASSWORD=1 pg_isready -h postgres -p 5433 -U postgres && echo "✅ postgres works" || echo "❌ postgres fails"
+  - PGPASSWORD=1 pg_isready -h 127.0.0.1 -p 5433 -U postgres && echo "✅ 127.0.0.1 works" || echo "❌ 127.0.0.1 fails"
 
 # Функция для отката базы данных
 .cleanup_database: &cleanup_database |
-  echo "Cleaning up database..."
-  PGPASSWORD=1 psql -h postgres -p 5433 -U postgres -c "
+  echo "Cleaning up database on localhost:5433..."
+  PGPASSWORD=1 psql -h localhost -p 5433 -U postgres -c "
+    SELECT pg_terminate_backend(pid) 
+    FROM pg_stat_activity 
+    WHERE datname = 'GreenhouseContext' AND pid <> pg_backend_pid();
+  " 2>/dev/null || true
+  
+  PGPASSWORD=1 psql -h localhost -p 5433 -U postgres -c "
     DROP DATABASE IF EXISTS \"GreenhouseContext\";
     CREATE DATABASE \"GreenhouseContext\" ENCODING 'UTF8';
-  " || echo "Database cleanup completed"
-  node scripts/init-test-db.js || echo "Database reinitialization completed"
-
+  " || echo "Database recreated"
+  
+  node scripts/init-test-db.js
+  
 build_solution:
   stage: build
   cache:
@@ -93,15 +104,12 @@ integration_tests:
   before_script:
     - apt-get update
     - apt-get install -y postgresql-client nodejs
+    - npm install dotenv pg
     - *cleanup_database
   script:
     - cd src
     - echo "=== RUNNING INTEGRATION TESTS ==="
-    - if [ -f "IntegrationTests/bin/Debug/net9.0/IntegrationTests.dll" ]; then
-        dotnet test IntegrationTests/IntegrationTests.csproj --no-build --logger "trx;LogFileName=integration-tests.trx" --results-directory "../test-results";
-      else
-        dotnet test IntegrationTests/IntegrationTests.csproj --logger "trx;LogFileName=integration-tests.trx" --results-directory "../test-results";
-      fi
+    - dotnet test IntegrationTests/IntegrationTests.csproj --no-build --logger "trx;LogFileName=integration-tests.trx" --results-directory "../test-results"
   artifacts:
     when: always
     paths:
