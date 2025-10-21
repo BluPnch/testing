@@ -109,45 +109,23 @@ jobs:
         run: |
           echo "=== Collecting Allure results ==="
 
-          # Проверяем что есть в директории
-          echo "Files in allure-results-unit:"
-          ls -la allure-results-unit/ 2>/dev/null || echo "Directory is empty"
+          # Ищем настоящие Allure результаты
+          echo "Searching for Allure results in output directories..."
+          find . -name "*.json" -path "*/bin/*" | grep -i allure | head -10 || echo "No allure results found in bin directories"
 
-          # Если директория пустая, создаем тестовый результат
-          if [ ! "$(ls -A allure-results-unit 2>/dev/null)" ]; then
-            echo "Creating test Allure results..."
-            mkdir -p allure-results-unit
+          # Копируем результаты из output директорий
+          echo "Copying Allure results from output directories..."
+          find src/UnitTests/bin -name "*.json" -exec cp {} allure-results-unit/ \; 2>/dev/null || echo "No results to copy"
 
-            # Создаем несколько тестовых результатов
-            echo '{
-              "name": "Unit Test 1",
-              "status": "passed",
-              "stage": "finished",
-              "start": 1700000000000,
-              "stop": 1700000001000,
-              "uuid": "unit-test-1",
-              "historyId": "test-history-1",
-              "fullName": "UnitTests.AuthenticationTests.User_Can_Login"
-            }' > allure-results-unit/unit-test-1-result.json
-
-            echo '{
-              "name": "Unit Test 2", 
-              "status": "passed",
-              "stage": "finished", 
-              "start": 1700000002000,
-              "stop": 1700000003000,
-              "uuid": "unit-test-2",
-              "historyId": "test-history-2",
-              "fullName": "UnitTests.UserTests.User_Created_Successfully"
-            }' > allure-results-unit/unit-test-2-result.json
-
-            echo "Test results created"
-          else
-            echo "Allure results already exist"
+          # Проверяем корневую директорию
+          if [ -d "allure-results" ]; then
+            echo "Found root allure-results directory"
+            cp -r allure-results/* allure-results-unit/ 2>/dev/null || echo "No files to copy"
           fi
 
-          echo "Final files in allure-results-unit:"
-          ls -la allure-results-unit/
+          echo "Files collected in allure-results-unit:"
+          ls -la allure-results-unit/ | head -10
+          echo "Total files: $(ls -1 allure-results-unit/ 2>/dev/null | wc -l)"
 
       - name: Upload Allure results
         uses: actions/upload-artifact@v4
