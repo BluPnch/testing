@@ -82,13 +82,19 @@ unit_tests:
 
 integration_tests:
   stage: test_integration
-  needs: ["unit_tests"]  # Зависит от unit тестов
+  needs: ["unit_tests"] 
   before_script:
+    - apt-get update
+    - apt-get install -y postgresql-client nodejs
     - *cleanup_database
   script:
     - cd src
     - echo "=== RUNNING INTEGRATION TESTS ==="
-    - dotnet test IntegrationTests/IntegrationTests.csproj --no-build --logger "trx;LogFileName=integration-tests.trx" --results-directory "../test-results"
+    - if [ -f "IntegrationTests/bin/Debug/net9.0/IntegrationTests.dll" ]; then
+        dotnet test IntegrationTests/IntegrationTests.csproj --no-build --logger "trx;LogFileName=integration-tests.trx" --results-directory "../test-results";
+      else
+        dotnet test IntegrationTests/IntegrationTests.csproj --logger "trx;LogFileName=integration-tests.trx" --results-directory "../test-results";
+      fi
   artifacts:
     when: always
     paths:
@@ -101,6 +107,8 @@ e2e_tests:
   stage: test_e2e
   needs: ["integration_tests"]  # Зависит от integration тестов
   before_script:
+    - apt-get update
+    - apt-get install -y postgresql-client nodejs wget unzip fontconfig libfreetype6 libx11-6 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6
     - *cleanup_database
     # Установка зависимостей для E2E тестов
     - apt-get update && apt-get install -y wget unzip fontconfig libfreetype6 libx11-6 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6
