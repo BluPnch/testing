@@ -10,6 +10,7 @@ services:
       - "5433:5433"  # Явно указываем порт 5433
     command: ["postgres", "-p", "5433", "-c", "listen_addresses=*"]  # Запускаем на порту 5433
 
+
   test-runner:
     build:
       context: .
