@@ -5,8 +5,5 @@
       "https://github.com/${{ github.repository }}/issues/{issue}",
       "https://example.org/{tms}"
     ]
-  },
-  "labels": {
-    "layer": ["integration", "api"]
   }
 }
