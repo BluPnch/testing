@@ -54,6 +54,13 @@ before_script:
 
 build_solution:
   stage: build
+  cache:
+    key: "${CI_COMMIT_REF_SLUG}-build"
+    paths:
+      - .nuget/
+      - src/**/bin/
+      - src/**/obj/
+    policy: pull-push
   script:
     - cd src
     - echo "=== BUILDING SOLUTION ==="
