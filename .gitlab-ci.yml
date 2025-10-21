@@ -121,11 +121,6 @@ generate_report:
   needs: []
   script:
     - echo "=== TEST EXECUTION SUMMARY ==="
-    - echo "Build: SUCCESS"
-    - echo "Unit Tests: COMPLETED"
-    - echo "Integration Tests: COMPLETED"
-    - echo "E2E Tests: COMPLETED"
-    - echo "=== CHECK ARTIFACTS FOR DETAILED RESULTS ==="
   artifacts:
     when: always
     paths:
