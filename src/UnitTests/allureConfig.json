@@ -1,8 +1,8 @@
 ﻿{
   "allure": {
-    "directory": "../../allure-results",
+    "directory": "../../../allure-results-unit",
     "links": [
-      "https://github.com/${{ github.repository }}/issues/{issue}",
+      "https://github.com/BluPnch/testing/issues/{issue}",
       "https://example.org/{tms}"
     ]
   },
