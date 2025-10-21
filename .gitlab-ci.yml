@@ -33,20 +33,24 @@ services:
 before_script:
   - apt-get update
   - apt-get install -y curl postgresql-client nodejs net-tools
+  - curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+  - apt-get install -y nodejs 
+
+  - node --version
+  - npm --version
+
   - npm install
 
-  # Диагностика сети
-  - echo "=== NETWORK DIAGNOSTICS ==="
-  - hostname
-  - cat /etc/hosts
-  - netstat -tulpn | grep 5433 || echo "PostgreSQL not found on 5433"
-  
-  # Проверка разных хостов
-  - echo "Testing connection to different hosts:"
-  - PGPASSWORD=1 pg_isready -h localhost -p 5433 -U postgres && echo "✅ localhost works" || echo "❌ localhost fails"
-  - PGPASSWORD=1 pg_isready -h postgres -p 5433 -U postgres && echo "✅ postgres works" || echo "❌ postgres fails"
-  - PGPASSWORD=1 pg_isready -h 127.0.0.1 -p 5433 -U postgres && echo "✅ 127.0.0.1 works" || echo "❌ 127.0.0.1 fails"
+  - echo "Waiting for PostgreSQL..."
+  - timeout 60s bash -c 'until PGPASSWORD=1 pg_isready -h localhost -p 5433 -U postgres; do sleep 2; echo "Waiting..."; done'
 
+  - PGPASSWORD=1 psql -h localhost -p 5433 -U postgres -c "SELECT 1;" || exit 1
+
+  - PGPASSWORD=1 psql -h localhost -p 5433 -U postgres -c "CREATE DATABASE \"GreenhouseContext\" ENCODING 'UTF8';" 2>/dev/null || echo "Database already exists"
+
+  - node scripts/init-test-db.js || echo "DB init completed"
+      
+      
 # Функция для отката базы данных
 .cleanup_database: &cleanup_database |
   echo "Cleaning up database on localhost:5433..."
