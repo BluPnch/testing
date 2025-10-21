@@ -1,0 +1,304 @@
+﻿name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  DB_HOST: localhost
+  DB_PORT: 5433
+  DB_USER: postgres
+  DB_PASSWORD: 1
+  DB_NAME: GreenhouseContext
+  DATABASE_URL: postgresql://postgres:1@localhost:5433/GreenhouseContext
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: 1
+          POSTGRES_USER: postgres
+          POSTGRES_DB: GreenhouseContext
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+
+      - name: Install dependencies
+        run: |
+          npm install
+
+      - name: Wait for PostgreSQL
+        run: |
+          timeout 90s bash -c 'until PGPASSWORD=1 pg_isready -h localhost -p 5433 -U postgres; do sleep 3; echo "Waiting..."; done'
+
+      - name: Initialize test database
+        run: |
+          PGPASSWORD=1 psql -h localhost -p 5433 -U postgres -c "CREATE DATABASE \"GreenhouseContext\" ENCODING 'UTF8';" 2>/dev/null || echo "Database already exists"
+          node scripts/init-test-db.js || echo "DB init completed"
+
+      - name: Restore dependencies
+        run: |
+          cd src
+          dotnet restore
+
+      - name: Build solution
+        run: |
+          cd src
+          dotnet build --verbosity normal
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: |
+            src/**/bin/
+            src/**/obj/
+          retention-days: 1
+
+  unit_tests:
+    runs-on: ubuntu-latest
+    needs: build
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: 1
+          POSTGRES_USER: postgres
+          POSTGRES_DB: GreenhouseContext
+        ports:
+          - 5433:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
+          path: src/
+
+      - name: Run unit tests
+        run: |
+          cd src
+          dotnet test UnitTests/UnitTests.csproj --no-build --logger "trx;LogFileName=unit-tests.trx" --results-directory "../test-results"
+
+      - name: Upload unit test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-results
+          path: test-results/
+          retention-days: 30
+
+      - name: Publish Unit Test Results
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Unit Tests
+          path: test-results/*.trx
+          reporter: dotnet-trx
+
+  integration_tests:
+    runs-on: ubuntu-latest
+    needs: unit_tests
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: 1
+          POSTGRES_USER: postgres
+          POSTGRES_DB: GreenhouseContext
+        ports:
+          - 5433:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+
+      - name: Install dependencies
+        run: |
+          npm install
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
+          path: src/
+
+      - name: Cleanup and initialize database
+        run: |
+          echo "Cleaning up database on localhost:5433..."
+          PGPASSWORD=1 psql -h localhost -p 5433 -U postgres -c "
+            SELECT pg_terminate_backend(pid) 
+            FROM pg_stat_activity 
+            WHERE datname = 'GreenhouseContext' AND pid <> pg_backend_pid();
+          " 2>/dev/null || true
+          
+          PGPASSWORD=1 psql -h localhost -p 5433 -U postgres -c "
+            DROP DATABASE IF EXISTS \"GreenhouseContext\";
+            CREATE DATABASE \"GreenhouseContext\" ENCODING 'UTF8';
+          " || echo "Database recreated"
+          
+          node scripts/init-test-db.js
+
+      - name: Run integration tests
+        run: |
+          cd src
+          dotnet test IntegrationTests/IntegrationTests.csproj --no-build --logger "trx;LogFileName=integration-tests.trx" --results-directory "../test-results"
+
+      - name: Upload integration test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-results
+          path: test-results/
+          retention-days: 30
+
+      - name: Publish Integration Test Results
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Integration Tests
+          path: test-results/*.trx
+          reporter: dotnet-trx
+
+  e2e_tests:
+    runs-on: ubuntu-latest
+    needs: integration_tests
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: 1
+          POSTGRES_USER: postgres
+          POSTGRES_DB: GreenhouseContext
+        ports:
+          - 5433:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Install E2E dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget unzip fontconfig libfreetype6 libx11-6 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
+          path: src/
+
+      - name: Cleanup and initialize database
+        run: |
+          echo "Cleaning up database on localhost:5433..."
+          PGPASSWORD=1 psql -h localhost -p 5433 -U postgres -c "
+            SELECT pg_terminate_backend(pid) 
+            FROM pg_stat_activity 
+            WHERE datname = 'GreenhouseContext' AND pid <> pg_backend_pid();
+          " 2>/dev/null || true
+          
+          PGPASSWORD=1 psql -h localhost -p 5433 -U postgres -c "
+            DROP DATABASE IF EXISTS \"GreenhouseContext\";
+            CREATE DATABASE \"GreenhouseContext\" ENCODING 'UTF8';
+          " || echo "Database recreated"
+          
+          node scripts/init-test-db.js
+
+      - name: Run E2E tests
+        run: |
+          cd src
+          dotnet test E2ETests/E2ETests.csproj --no-build --logger "trx;LogFileName=e2e-tests.trx" --results-directory "../test-results"
+
+      - name: Upload E2E test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-test-results
+          path: test-results/
+          retention-days: 30
+
+      - name: Publish E2E Test Results
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: E2E Tests
+          path: test-results/*.trx
+          reporter: dotnet-trx
+
+  report:
+    runs-on: ubuntu-latest
+    needs: [unit_tests, integration_tests, e2e_tests]
+    if: always()
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download unit test results
+        uses: actions/download-artifact@v4
+        with:
+          name: unit-test-results
+          path: all-test-results/
+
+      - name: Download integration test results
+        uses: actions/download-artifact@v4
+        with:
+          name: integration-test-results
+          path: all-test-results/
+
+      - name: Download E2E test results
+        uses: actions/download-artifact@v4
+        with:
+          name: e2e-test-results
+          path: all-test-results/
+
+      - name: Test Execution Summary
+        run: |
+          echo "=== TEST EXECUTION SUMMARY ==="
+          echo "Unit Tests: ${{ needs.unit_tests.result }}"
+          echo "Integration Tests: ${{ needs.integration_tests.result }}"
+          echo "E2E Tests: ${{ needs.e2e_tests.result }}"
+          echo "=============================="
