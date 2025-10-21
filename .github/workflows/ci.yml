@@ -103,9 +103,9 @@ jobs:
         run: |
           echo "=== Unit Tests Summary ==="
           if [ -f "test-results/unit-tests.trx" ]; then
-            echo "✅ Unit tests completed - results saved"
+            echo "Unit tests completed - results saved"
           else
-            echo "❌ No unit test results found"
+            echo "No unit test results found"
           fi
 
   integration_tests:
@@ -166,9 +166,9 @@ jobs:
         run: |
           echo "=== Integration Tests Summary ==="
           if [ -f "test-results/integration-tests.trx" ]; then
-            echo "✅ Integration tests completed - results saved"
+            echo "Integration tests completed - results saved"
           else
-            echo "❌ No integration test results found"
+            echo "No integration test results found"
           fi
 
   e2e_tests:
@@ -234,9 +234,9 @@ jobs:
         run: |
           echo "=== E2E Tests Summary ==="
           if [ -f "test-results/e2e-tests.trx" ]; then
-            echo "✅ E2E tests completed - results saved"
+            echo "E2E tests completed - results saved"
           else
-            echo "❌ No E2E test results found"
+            echo "No E2E test results found"
           fi
 
   report:
