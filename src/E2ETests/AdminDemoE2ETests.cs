@@ -82,10 +82,10 @@ namespace E2ETests
                 // === PHASE 4: ПРОВЕРКА РЕЗУЛЬТАТА ===
                 await LogTestStep("5. Проверка, что клиент стал сотрудником");
                 var employees = await GetEmployeesList();
-                employees.Should().Contain(e => e.Id.ToString() == assignedEmployeeId,
+                employees.Should().Contain(e => e.Id.ToString() == existingClientId, // Теперь ID сотрудника = ID клиента
                     "Назначенный сотрудник должен отображаться в списке сотрудников");
 
-                var employeeDetails = await GetEmployeeDetails(assignedEmployeeId);
+                var employeeDetails = await GetEmployeeDetails(existingClientId); // Используем existingClientId
                 employeeDetails.Should().NotBeNull("Детали сотрудника не должны быть null");
                 employeeDetails.ClientId.Should().Be(existingClientId, "Сотрудник должен быть привязан к клиенту");
 
@@ -160,51 +160,28 @@ namespace E2ETests
 
         private async Task<string> AssignClientAsEmployee(string clientId)
         {
-            // Получаем детали клиента
-            var clientDetails = await GetClientDetails(clientId);
-            
-            // Создаем сотрудника на основе данных клиента
-            var employeeRequest = new
+            var updateRoleRequest = new
             {
-                firstName = clientDetails.CompanyName, // Используем название компании как firstName
-                lastName = "Assigned", // Добавляем фамилию
-                email = $"employee-{clientId}@test.com", // Генерируем уникальный email
-                phone = clientDetails.PhoneNumber ?? "+1234567890",
-                position = "Assigned from Client",
-                clientId = clientId, // Привязываем к клиенту
-                hireDate = DateTime.UtcNow.ToString("yyyy-MM-dd")
+                newRole = "Employee" // Используем строковое значение роли
             };
-            
-            var payload = JsonSerializer.Serialize(employeeRequest, JsonOptions);
+    
+            var payload = JsonSerializer.Serialize(updateRoleRequest, JsonOptions);
             using var content = new StringContent(payload, Encoding.UTF8, "application/json");
-            
-            var response = await _client.PostAsync("/api/v1/employees", content);
-            
-            if (response.StatusCode != HttpStatusCode.Created)
+    
+            var response = await _client.PatchAsync($"/api/v1/clients/{clientId}/role", content);
+    
+            if (response.StatusCode != HttpStatusCode.OK)
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
                 throw new Exception($"Assign client as employee failed: {response.StatusCode} - {errorContent}");
             }
-            
+    
             var responseContent = await response.Content.ReadAsStringAsync();
-            var result = JsonSerializer.Deserialize<EmployeeItem>(responseContent, JsonOptions);
-            
+            var result = JsonSerializer.Deserialize<AuthUserResponse>(responseContent, JsonOptions);
+    
             return result.Id.ToString();
         }
 
-        private async Task<ClientItem> GetClientDetails(string clientId)
-        {
-            var response = await _client.GetAsync($"/api/v1/clients/{clientId}");
-            
-            if (response.StatusCode != HttpStatusCode.OK)
-            {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                throw new Exception($"Get client details failed: {response.StatusCode} - {errorContent}");
-            }
-            
-            var content = await response.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<ClientItem>(content, JsonOptions);
-        }
 
         private async Task<List<EmployeeItem>> GetEmployeesList()
         {
@@ -238,8 +215,17 @@ namespace E2ETests
 
         private async Task<bool> DeleteEmployee(string employeeId)
         {
-            var response = await _client.DeleteAsync($"/api/v1/employees/{employeeId}");
-            return response.StatusCode == HttpStatusCode.OK || response.StatusCode == HttpStatusCode.NoContent;
+            // Возвращаем роль обратно к Client
+            var updateRoleRequest = new
+            {
+                newRole = "Client"
+            };
+    
+            var payload = JsonSerializer.Serialize(updateRoleRequest, JsonOptions);
+            using var content = new StringContent(payload, Encoding.UTF8, "application/json");
+    
+            var response = await _client.PatchAsync($"/api/v1/clients/{employeeId}/role", content);
+            return response.StatusCode == HttpStatusCode.OK;
         }
 
         private async Task LogTestStep(string message)
@@ -291,5 +277,12 @@ namespace E2ETests
         public string Position { get; set; } = string.Empty;
         public string ClientId { get; set; } = string.Empty;
         public DateTime HireDate { get; set; }
+    }
+    
+    public class AuthUserResponse
+    {
+        public Guid Id { get; set; }
+        public string Username { get; set; } = string.Empty;
+        public string Role { get; set; } = string.Empty;
     }
 }
