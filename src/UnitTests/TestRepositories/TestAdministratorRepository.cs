@@ -1,5 +1,7 @@
-using Allure.Xunit.Attributes;
+using System.ComponentModel;
+using Allure.Xunit;
 using Allure.Net.Commons;
+using Allure.Xunit.Attributes;
 using Domain.Models;
 using DataAccess.Context;
 using DataAccess.Models;
@@ -39,9 +41,9 @@ namespace UnitTests.TestRepositories
 
         #region GetAllAdministratorsAsync Tests
         [Fact]
-        [AllureName("Get all administrators - should return all")]
+        [DisplayName("Get all administrators - should return all")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.Critical)]
+        [AllureSeverity(SeverityLevel.critical)]
         public async Task GetAllAdministratorsAsync_ShouldReturnAllAdministrators()
         {
             await AllureApi.Step("Setup test data", async () => {
@@ -79,7 +81,7 @@ namespace UnitTests.TestRepositories
 
         #region GetAdministratorByIdAsync Tests
         [Fact]
-        [AllureName("Get administrator by ID - should return administrator when exists")]
+        [DisplayName("Get administrator by ID - should return administrator when exists")]
         [AllureOwner("Development Team")]
         public async Task GetAdministratorByIdAsync_ShouldReturnAdministrator_WhenExists()
         {
@@ -109,7 +111,7 @@ namespace UnitTests.TestRepositories
         }
 
         [Fact]
-        [AllureName("Get administrator by ID - should throw exception when not exists")]
+        [DisplayName("Get administrator by ID - should throw exception when not exists")]
         [AllureOwner("Development Team")]
         public async Task GetAdministratorByIdAsync_ShouldThrowAdministratorNotFoundException_WhenNotExists()
         {
@@ -129,9 +131,9 @@ namespace UnitTests.TestRepositories
 
         #region CreateAdministratorAsync Tests
         [Fact]
-        [AllureName("Create administrator - should add to database")]
+        [DisplayName("Create administrator - should add to database")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.Critical)]
+        [AllureSeverity(SeverityLevel.critical)]
         public async Task CreateAdministratorAsync_ShouldAddAdministratorToDatabase()
         {
             var adminId = Guid.NewGuid();

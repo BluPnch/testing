@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Allure.Xunit.Attributes;
 using Allure.Net.Commons;
 using DataAccess.Context;
@@ -40,9 +41,9 @@ namespace UnitTests.TestRepositories
 
         #region CreateClient Tests
         [Fact]
-        [AllureName("Create client - should add client to database")]
+        [DisplayName("Create client - should add client to database")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.Critical)]
+        [AllureSeverity(SeverityLevel.critical)]
         public async Task CreateClientAsync_ShouldAddClientToDatabase()
         {
             await AllureApi.Step("Setup test data", async () => {
@@ -65,7 +66,7 @@ namespace UnitTests.TestRepositories
 
         #region GetAllClients Tests
         [Fact]
-        [AllureName("Get all clients - should return all clients")]
+        [DisplayName("Get all clients - should return all clients")]
         [AllureOwner("Development Team")]
         [AllureSeverity(SeverityLevel.normal)]
         public async Task GetAllClientsAsync_ShouldReturnAllClients()
@@ -87,9 +88,9 @@ namespace UnitTests.TestRepositories
 
         #region GetClientById Tests
         [Fact]
-        [AllureName("Get client by ID - should return client when exists")]
+        [DisplayName("Get client by ID - should return client when exists")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.Critical)]
+        [AllureSeverity(SeverityLevel.critical)]
         public async Task GetClientByIdAsync_ShouldReturnClient_WhenExists()
         {
             var clientId = Guid.NewGuid();
@@ -114,7 +115,7 @@ namespace UnitTests.TestRepositories
         }
 
         [Fact]
-        [AllureName("Get client by ID - should throw exception when not exists")]
+        [DisplayName("Get client by ID - should throw exception when not exists")]
         [AllureOwner("Development Team")]
         [AllureSeverity(SeverityLevel.normal)]
         public async Task GetClientByIdAsync_ShouldThrowClientNotFoundException_WhenNotExists()
@@ -134,9 +135,9 @@ namespace UnitTests.TestRepositories
         
         #region GetClientByCompanyName Tests
         [Fact]
-        [AllureName("Get client by company name - should return client when exists")]
+        [DisplayName("Get client by company name - should return client when exists")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.Critical)]
+        [AllureSeverity(SeverityLevel.critical)]
         public async Task GetClientByCompanyNameAsync_ShouldReturnClient_WhenExists()
         {
             var companyName = "Test Company";
@@ -156,7 +157,7 @@ namespace UnitTests.TestRepositories
         }
 
         [Fact]
-        [AllureName("Get client by company name - should throw exception when not exists")]
+        [DisplayName("Get client by company name - should throw exception when not exists")]
         [AllureOwner("Development Team")]
         [AllureSeverity(SeverityLevel.normal)]
         public async Task GetClientByCompanyNameAsync_ShouldThrowClientNotFoundException_WhenNotExists()
@@ -172,7 +173,7 @@ namespace UnitTests.TestRepositories
 
         #region GetClientsByPhoneNumber Tests
         [Fact]
-        [AllureName("Get clients by phone number - should return clients")]
+        [DisplayName("Get clients by phone number - should return clients")]
         [AllureOwner("Development Team")]
         [AllureSeverity(SeverityLevel.normal)]
         public async Task GetClientsByPhoneNumberAsync_ShouldReturnClients()
@@ -194,7 +195,7 @@ namespace UnitTests.TestRepositories
         }
 
         [Fact]
-        [AllureName("Get clients by phone number - should return empty list when no matches")]
+        [DisplayName("Get clients by phone number - should return empty list when no matches")]
         [AllureOwner("Development Team")]
         [AllureSeverity(SeverityLevel.normal)]
         public async Task GetClientsByPhoneNumberAsync_ShouldReturnEmptyList_WhenNoMatches()
@@ -212,7 +213,7 @@ namespace UnitTests.TestRepositories
 
         #region GetPlantsByClientId Tests
         [Fact]
-        [AllureName("Get plants by client ID - should return plants")]
+        [DisplayName("Get plants by client ID - should return plants")]
         [AllureOwner("Development Team")]
         [AllureSeverity(SeverityLevel.normal)]
         public async Task GetPlantsByClientIdAsync_ShouldReturnPlants()
@@ -256,9 +257,9 @@ namespace UnitTests.TestRepositories
         
         #region DeleteClient Tests
         [Fact]
-        [AllureName("Delete client - should remove client from database")]
+        [DisplayName("Delete client - should remove client from database")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.Critical)]
+        [AllureSeverity(SeverityLevel.critical)]
         public async Task DeleteClientAsync_ShouldRemoveClientFromDatabase()
         {
             var clientId = Guid.NewGuid();
@@ -284,7 +285,7 @@ namespace UnitTests.TestRepositories
         }
 
         [Fact]
-        [AllureName("Delete client - should throw exception when not exists")]
+        [DisplayName("Delete client - should throw exception when not exists")]
         [AllureOwner("Development Team")]
         [AllureSeverity(SeverityLevel.normal)]
         public async Task DeleteClientAsync_ShouldThrowClientNotFoundException_WhenNotExists()

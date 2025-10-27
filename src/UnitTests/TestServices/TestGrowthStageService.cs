@@ -40,7 +40,7 @@ namespace UnitTests.TestServices
         [Fact]
         [AllureName("Create growth stage - should create growth stage when valid data")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.Critical)]
+        [AllureSeverity(SeverityLevel.critical)]
         public async Task CreateGrowthStageAsync_ShouldCreateGrowthStage_WhenValidData()
         {
             await AllureApi.Step("Setup valid growth stage data", () => {
@@ -190,7 +190,7 @@ namespace UnitTests.TestServices
         [Fact]
         [AllureName("Get growth stage by ID - should return growth stage when exists")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.Critical)]
+        [AllureSeverity(SeverityLevel.critical)]
         public async Task GetGrowthStageByIdAsync_ShouldReturnGrowthStage_WhenExists()
         {
             var growthStageId = Guid.NewGuid();
@@ -305,7 +305,7 @@ namespace UnitTests.TestServices
         [Fact]
         [AllureName("Update growth stage - should update growth stage when valid data")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.Critical)]
+        [AllureSeverity(SeverityLevel.critical)]
         public async Task UpdateGrowthStageAsync_ShouldUpdateGrowthStage_WhenValidData()
         {
             var growthStageId = Guid.NewGuid();

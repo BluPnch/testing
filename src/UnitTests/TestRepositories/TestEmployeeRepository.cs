@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Allure.Xunit.Attributes;
 using Allure.Net.Commons;
 using DataAccess.Context;
@@ -46,9 +47,9 @@ namespace UnitTests.TestRepositories
         
         #region CreateEmployee Tests
         [Fact]
-        [AllureName("Create employee - should add employee to database")]
+        [DisplayName("Create employee - should add employee to database")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.Critical)]
+        [AllureSeverity(SeverityLevel.critical)]
         public async Task CreateEmployeeAsync_ShouldAddEmployeeToDatabase()
         {
             await AllureApi.Step("Setup administrator", async () => {
@@ -98,7 +99,7 @@ namespace UnitTests.TestRepositories
         }
         
         [Fact]
-        [AllureName("Create employee - should throw exception when admin not exists")]
+        [DisplayName("Create employee - should throw exception when admin not exists")]
         [AllureOwner("Development Team")]
         [AllureSeverity(SeverityLevel.normal)]
         public async Task CreateEmployeeAsync_ShouldThrowException_WhenAdminNotExists()
@@ -121,7 +122,7 @@ namespace UnitTests.TestRepositories
 
         #region GetAllEmployees Tests
         [Fact]
-        [AllureName("Get all employees - should return all employees")]
+        [DisplayName("Get all employees - should return all employees")]
         [AllureOwner("Development Team")]
         [AllureSeverity(SeverityLevel.normal)]
         public async Task GetAllEmployeesAsync_ShouldReturnAllEmployees()
@@ -167,9 +168,9 @@ namespace UnitTests.TestRepositories
 
         #region GetEmployeeById Tests
         [Fact]
-        [AllureName("Get employee by ID - should return employee when exists")]
+        [DisplayName("Get employee by ID - should return employee when exists")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.Critical)]
+        [AllureSeverity(SeverityLevel.critical)]
         public async Task GetEmployeeByIdAsync_ShouldReturnEmployee_WhenExists()
         {
             var administrator = EmployeeMotherObject.CreateDefaultAdministratorDb();
@@ -190,7 +191,7 @@ namespace UnitTests.TestRepositories
         }
 
         [Fact]
-        [AllureName("Get employee by ID - should throw exception when not exists")]
+        [DisplayName("Get employee by ID - should throw exception when not exists")]
         [AllureOwner("Development Team")]
         [AllureSeverity(SeverityLevel.normal)]
         public async Task GetEmployeeByIdAsync_ShouldThrowEmployeeNotFoundException_WhenNotExists()
@@ -207,7 +208,7 @@ namespace UnitTests.TestRepositories
 
         #region GetEmployeesByTask Tests
         [Fact]
-        [AllureName("Get employees by task - should return employees")]
+        [DisplayName("Get employees by task - should return employees")]
         [AllureOwner("Development Team")]
         [AllureSeverity(SeverityLevel.normal)]
         public async Task GetEmployeesByTaskAsync_ShouldReturnEmployees()
@@ -256,7 +257,7 @@ namespace UnitTests.TestRepositories
 
         #region GetEmployeesByPlantDomain Tests
         [Fact]
-        [AllureName("Get employees by plant domain - should return employees")]
+        [DisplayName("Get employees by plant domain - should return employees")]
         [AllureOwner("Development Team")]
         [AllureSeverity(SeverityLevel.normal)]
         public async Task GetEmployeesByPlantDomainAsync_ShouldReturnEmployees()
@@ -305,9 +306,9 @@ namespace UnitTests.TestRepositories
 
         #region GetEmployeeByPhoneNumber Tests
         [Fact]
-        [AllureName("Get employee by phone number - should return employee when exists")]
+        [DisplayName("Get employee by phone number - should return employee when exists")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.Critical)]
+        [AllureSeverity(SeverityLevel.critical)]
         public async Task GetEmployeeByPhoneNumberAsync_ShouldReturnEmployee_WhenExists()
         {
             var phoneNumber = "1234567890";
@@ -339,7 +340,7 @@ namespace UnitTests.TestRepositories
         }
 
         [Fact]
-        [AllureName("Get employee by phone number - should throw exception when not exists")]
+        [DisplayName("Get employee by phone number - should throw exception when not exists")]
         [AllureOwner("Development Team")]
         [AllureSeverity(SeverityLevel.normal)]
         public async Task GetEmployeeByPhoneNumberAsync_ShouldThrowEmployeeNotFoundException_WhenNotExists()
@@ -356,7 +357,7 @@ namespace UnitTests.TestRepositories
 
         #region GetPlantsByEmployeeId Tests
         [Fact]
-        [AllureName("Get plants by employee ID - should return plants")]
+        [DisplayName("Get plants by employee ID - should return plants")]
         [AllureOwner("Development Team")]
         [AllureSeverity(SeverityLevel.normal)]
         public async Task GetPlantsByEmployeeIdAsync_ShouldReturnPlants()
@@ -403,7 +404,7 @@ namespace UnitTests.TestRepositories
 
         #region AssignEmployeeToPlant Tests
         [Fact]
-        [AllureName("Assign employee to plant - should not create duplicate assignment")]
+        [DisplayName("Assign employee to plant - should not create duplicate assignment")]
         [AllureOwner("Development Team")]
         [AllureSeverity(SeverityLevel.normal)]
         public async Task AssignEmployeeToPlantAsync_ShouldNotCreateDuplicateAssignment()
@@ -445,7 +446,7 @@ namespace UnitTests.TestRepositories
         }
 
         [Fact]
-        [AllureName("Assign employee to plant - should throw exception when employee not exists")]
+        [DisplayName("Assign employee to plant - should throw exception when employee not exists")]
         [AllureOwner("Development Team")]
         [AllureSeverity(SeverityLevel.normal)]
         public async Task AssignEmployeeToPlantAsync_ShouldThrowEmployeeNotFoundException_WhenEmployeeNotExists()
@@ -460,7 +461,7 @@ namespace UnitTests.TestRepositories
         }
 
         [Fact]
-        [AllureName("Assign employee to plant - should throw exception when plant not exists")]
+        [DisplayName("Assign employee to plant - should throw exception when plant not exists")]
         [AllureOwner("Development Team")]
         [AllureSeverity(SeverityLevel.normal)]
         public async Task AssignEmployeeToPlantAsync_ShouldThrowPlantNotFoundException_WhenPlantNotExists()

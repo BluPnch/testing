@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Allure.Xunit.Attributes;
 using Allure.Net.Commons;
 using DataAccess.Context;
@@ -40,9 +41,9 @@ namespace UnitTests.TestRepositories
         
         #region CreateGrowthStage Tests
         [Fact]
-        [AllureName("Create growth stage - should add growth stage")]
+        [DisplayName("Create growth stage - should add growth stage")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.Critical)]
+        [AllureSeverity(SeverityLevel.critical)]
         public async Task CreateGrowthStageAsync_ShouldAddGrowthStage()
         {
             await AllureApi.Step("Setup growth stage", () => {
@@ -65,7 +66,7 @@ namespace UnitTests.TestRepositories
         }
 
         [Fact]
-        [AllureName("Create growth stage - should throw exception for null input")]
+        [DisplayName("Create growth stage - should throw exception for null input")]
         [AllureOwner("Development Team")]
         [AllureSeverity(SeverityLevel.normal)]
         public async Task CreateGrowthStageAsync_ShouldThrowArgumentNullException()
@@ -83,7 +84,7 @@ namespace UnitTests.TestRepositories
         
         #region GetAllGrowthStages Tests
         [Fact]
-        [AllureName("Get all growth stages - should return all stages")]
+        [DisplayName("Get all growth stages - should return all stages")]
         [AllureOwner("Development Team")]
         [AllureSeverity(SeverityLevel.normal)]
         public async Task GetAllGrowthStagesAsync_ShouldReturnAllStages()
@@ -110,9 +111,9 @@ namespace UnitTests.TestRepositories
         
         #region GetGrowthStageById Tests
         [Fact]
-        [AllureName("Get growth stage by ID - should return stage when exists")]
+        [DisplayName("Get growth stage by ID - should return stage when exists")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.Critical)]
+        [AllureSeverity(SeverityLevel.critical)]
         public async Task GetGrowthStageByIdAsync_ShouldReturnStage_WhenExists()
         {
             var stageId = Guid.NewGuid();
@@ -139,7 +140,7 @@ namespace UnitTests.TestRepositories
         }
 
         [Fact]
-        [AllureName("Get growth stage by ID - should throw exception when not exists")]
+        [DisplayName("Get growth stage by ID - should throw exception when not exists")]
         [AllureOwner("Development Team")]
         [AllureSeverity(SeverityLevel.normal)]
         public async Task GetGrowthStageByIdAsync_ShouldThrowNotFoundException_WhenNotExists()
@@ -155,9 +156,9 @@ namespace UnitTests.TestRepositories
         
         #region UpdateGrowthStage Tests
         [Fact]
-        [AllureName("Update growth stage - should update stage data")]
+        [DisplayName("Update growth stage - should update stage data")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.Critical)]
+        [AllureSeverity(SeverityLevel.critical)]
         public async Task UpdateGrowthStageAsync_ShouldUpdateStage()
         {
             var stageId = Guid.NewGuid();
@@ -193,7 +194,7 @@ namespace UnitTests.TestRepositories
         }
 
         [Fact]
-        [AllureName("Update growth stage - should throw exception when not exists")]
+        [DisplayName("Update growth stage - should throw exception when not exists")]
         [AllureOwner("Development Team")]
         [AllureSeverity(SeverityLevel.normal)]
         public async Task UpdateGrowthStageAsync_ShouldThrowNotFoundException_WhenNotExists()
@@ -211,9 +212,9 @@ namespace UnitTests.TestRepositories
         
         #region DeleteGrowthStage Tests
         [Fact]
-        [AllureName("Delete growth stage - should remove stage from database")]
+        [DisplayName("Delete growth stage - should remove stage from database")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.Critical)]
+        [AllureSeverity(SeverityLevel.critical)]
         public async Task DeleteGrowthStageAsync_ShouldRemoveStage()
         {
             var stageId = Guid.NewGuid();
@@ -239,7 +240,7 @@ namespace UnitTests.TestRepositories
         }
 
         [Fact]
-        [AllureName("Delete growth stage - should throw exception when not exists")]
+        [DisplayName("Delete growth stage - should throw exception when not exists")]
         [AllureOwner("Development Team")]
         [AllureSeverity(SeverityLevel.normal)]
         public async Task DeleteGrowthStageAsync_ShouldThrowNotFoundException_WhenNotExists()

@@ -65,7 +65,7 @@ namespace UnitTests.TestServices
         [Fact]
         [AllureName("Create employee - should create employee when valid data")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.Critical)]
+        [AllureSeverity(SeverityLevel.critical)]
         public async Task CreateEmployeeAsync_ShouldCreateEmployee_WhenValidData()
         {
             await AllureApi.Step("Setup valid employee data", () => {
@@ -339,7 +339,7 @@ namespace UnitTests.TestServices
         [Fact]
         [AllureName("Assign employee to plant - should assign employee when valid data")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.Critical)]
+        [AllureSeverity(SeverityLevel.critical)]
         public async Task AssignEmployeeToPlantAsync_ShouldAssignEmployee_WhenValidData()
         {
             var employeeId = Guid.NewGuid();
@@ -388,7 +388,7 @@ namespace UnitTests.TestServices
         [Fact]
         [AllureName("Delete employee - should delete employee when exists")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.Critical)]
+        [AllureSeverity(SeverityLevel.critical)]
         public async Task DeleteEmployeeAsync_ShouldDeleteEmployee_WhenExists()
         {
             var employeeId = Guid.NewGuid();
@@ -429,7 +429,7 @@ namespace UnitTests.TestServices
         [Fact]
         [AllureName("Get employee by ID - should return employee when exists")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.Critical)]
+        [AllureSeverity(SeverityLevel.critical)]
         public async Task GetEmployeeByIdAsync_ShouldReturnEmployee_WhenExists()
         {
             var employeeId = Guid.NewGuid();

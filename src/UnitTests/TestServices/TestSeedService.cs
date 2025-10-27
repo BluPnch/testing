@@ -120,7 +120,7 @@ namespace UnitTests.TestServices
         [Fact]
         [AllureName("Create seed - should create seed when valid data")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.Critical)]
+        [AllureSeverity(SeverityLevel.critical)]
         public async Task CreateSeedAsync_ShouldCreateSeed_WhenValidData()
         {
             await AllureApi.Step("Setup valid seed and plant data", () => {
@@ -239,7 +239,7 @@ namespace UnitTests.TestServices
         [Fact]
         [AllureName("Update seed - should update seed when valid data")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.Critical)]
+        [AllureSeverity(SeverityLevel.critical)]
         public async Task UpdateSeedAsync_ShouldUpdateSeed_WhenValidData()
         {
             await AllureApi.Step("Setup valid seed and plant data for update", () => {
@@ -342,7 +342,7 @@ namespace UnitTests.TestServices
         [Fact]
         [AllureName("Get seed by ID - should return seed when exists")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.Critical)]
+        [AllureSeverity(SeverityLevel.critical)]
         public async Task GetSeedByIdAsync_ShouldReturnSeed_WhenExists()
         {
             var seedId = Guid.NewGuid();

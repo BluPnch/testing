@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Allure.Xunit.Attributes;
 using Allure.Net.Commons;
 using DataAccess.Context;
@@ -90,9 +91,9 @@ namespace UnitTests.TestRepositories
 
         #region AddJournalRecord Tests
         [Fact]
-        [AllureName("Add journal record - should add record to database")]
+        [DisplayName("Add journal record - should add record to database")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.Critical)]
+        [AllureSeverity(SeverityLevel.critical)]
         public async Task AddJournalRecordAsync_ShouldAddRecordToDatabase()
         {
             var (plantId, growthStageId, employeeId) = await SetupDependenciesAsync();
@@ -125,7 +126,7 @@ namespace UnitTests.TestRepositories
         }
 
         [Fact]
-        [AllureName("Add journal record - should throw exception when record is null")]
+        [DisplayName("Add journal record - should throw exception when record is null")]
         [AllureOwner("Development Team")]
         [AllureSeverity(SeverityLevel.normal)]
         public async Task AddJournalRecordAsync_ShouldThrowArgumentNullException_WhenRecordIsNull()
@@ -139,7 +140,7 @@ namespace UnitTests.TestRepositories
         
         #region GetAllJournalRecords Tests
         [Fact]
-        [AllureName("Get all journal records - should return all records")]
+        [DisplayName("Get all journal records - should return all records")]
         [AllureOwner("Development Team")]
         [AllureSeverity(SeverityLevel.normal)]
         public async Task GetAllJournalRecordsAsync_ShouldReturnAllRecords()
@@ -180,9 +181,9 @@ namespace UnitTests.TestRepositories
         
         #region GetJournalRecordById Tests
         [Fact]
-        [AllureName("Get journal record by ID - should return record when exists")]
+        [DisplayName("Get journal record by ID - should return record when exists")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.Critical)]
+        [AllureSeverity(SeverityLevel.critical)]
         public async Task GetJournalRecordByIdAsync_ShouldReturnRecord_WhenExists()
         {
             var (plantId, growthStageId, employeeId) = await SetupDependenciesAsync();
@@ -214,7 +215,7 @@ namespace UnitTests.TestRepositories
         }
 
         [Fact]
-        [AllureName("Get journal record by ID - should throw exception when not exists")]
+        [DisplayName("Get journal record by ID - should throw exception when not exists")]
         [AllureOwner("Development Team")]
         [AllureSeverity(SeverityLevel.normal)]
         public async Task GetJournalRecordByIdAsync_ShouldThrowJournalRecordNotFoundException_WhenNotExists()
@@ -230,9 +231,9 @@ namespace UnitTests.TestRepositories
         
         #region UpdateJournalRecord Tests
         [Fact]
-        [AllureName("Update journal record - should update record data")]
+        [DisplayName("Update journal record - should update record data")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.Critical)]
+        [AllureSeverity(SeverityLevel.critical)]
         public async Task UpdateJournalRecordAsync_ShouldUpdateRecord()
         {
             var (plantId, growthStageId, employeeId) = await SetupDependenciesAsync();
@@ -277,7 +278,7 @@ namespace UnitTests.TestRepositories
         }
 
         [Fact]
-        [AllureName("Update journal record - should throw exception when not exists")]
+        [DisplayName("Update journal record - should throw exception when not exists")]
         [AllureOwner("Development Team")]
         [AllureSeverity(SeverityLevel.normal)]
         public async Task UpdateJournalRecordAsync_ShouldThrowJournalRecordNotFoundException_WhenNotExists()
@@ -295,9 +296,9 @@ namespace UnitTests.TestRepositories
         
         #region DeleteJournalRecord Tests
         [Fact]
-        [AllureName("Delete journal record - should remove record from database")]
+        [DisplayName("Delete journal record - should remove record from database")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.Critical)]
+        [AllureSeverity(SeverityLevel.critical)]
         public async Task DeleteJournalRecordAsync_ShouldRemoveRecord()
         {
             var (plantId, growthStageId, employeeId) = await SetupDependenciesAsync();
@@ -325,7 +326,7 @@ namespace UnitTests.TestRepositories
         }
 
         [Fact]
-        [AllureName("Delete journal record - should throw exception when not exists")]
+        [DisplayName("Delete journal record - should throw exception when not exists")]
         [AllureOwner("Development Team")]
         [AllureSeverity(SeverityLevel.normal)]
         public async Task DeleteJournalRecordAsync_ShouldThrowJournalRecordNotFoundException_WhenNotExists()
