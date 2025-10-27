@@ -7,7 +7,7 @@
         <IsTestProject>true</IsTestProject>
         <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
         <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
-        <NoWarn>NU1603</NoWarn> 
+        <NoWarn>NU1603</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -16,8 +16,6 @@
         <PackageReference Include="xunit.runner.visualstudio" Version="2.9.2"/>
         <PackageReference Include="coverlet.collector" Version="6.0.2"/>
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.0"/>
-        <PackageReference Include="Allure.Xunit" Version="2.12.1"/>
-        <PackageReference Include="Allure.Net.Commons" Version="2.12.1"/>
         <PackageReference Include="FluentAssertions" Version="6.12.0"/>
     </ItemGroup>
 
@@ -27,11 +25,5 @@
 
     <ItemGroup>
         <Using Include="Xunit"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <None Update="allureConfig.json">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
     </ItemGroup>
 </Project>

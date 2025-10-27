@@ -4,10 +4,8 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Allure.Net.Commons;
 using Xunit;
 using FluentAssertions;
-using Allure.Xunit.Attributes;
 using System.Collections.Generic;
 using System.Linq;
 using System;
@@ -15,8 +13,6 @@ using System.IO;
 
 namespace E2ETests
 {
-    [AllureSuite("Administrator Real E2E Tests")]
-    [AllureFeature("Complete User Journey with Real API")]
     public class AdminRealE2ETests : IDisposable
     {
         private readonly HttpClient _client;
@@ -45,129 +41,107 @@ namespace E2ETests
             _client.DefaultRequestHeaders.Add("User-Agent", "E2E-Test-Suite/1.0");
         }
 
-        [AllureStory("Complete Administrator Real Journey")]
-        [AllureSeverity(SeverityLevel.critical)]
-        [AllureTag("Real-API")]
-        [AllureOwner("QA-Team")]
         [Fact(Timeout = 30000)]
         public async Task Administrator_Complete_Real_Journey_Should_Succeed()
         {
             // STEP 1: Real Login with credentials validation
-            await ExecuteStep("Authenticate as Administrator", async () =>
-            {
-                var loginRequest = new 
-                { 
-                    username = AdminEmail, 
-                    password = AdminPassword 
-                };
-                
-                var loginPayload = JsonSerializer.Serialize(loginRequest, JsonOptions);
-                using var loginContent = new StringContent(loginPayload, Encoding.UTF8, "application/json");
-                
-                var loginResponse = await _client.PostAsync("/api/v1/auth/login", loginContent);
-                
-                // Validate response
-                loginResponse.StatusCode.Should().Be(HttpStatusCode.OK, 
-                    "Login should succeed with valid admin credentials");
-                
-                var loginResponseContent = await loginResponse.Content.ReadAsStringAsync();
-                loginResponseContent.Should().NotBeNullOrWhiteSpace("Response should contain data");
-                
-                var loginResult = JsonSerializer.Deserialize<LoginResponse>(loginResponseContent, JsonOptions);
-                
-                loginResult.Should().NotBeNull("Login response should not be null");
-                loginResult!.Token.Should().NotBeNullOrEmpty("JWT token should be provided");
-                loginResult.Username.Should().Be(AdminEmail, "Should return the authenticated user's email");
-                
-                // Set authentication token for subsequent requests
-                _client.DefaultRequestHeaders.Authorization = 
-                    new AuthenticationHeaderValue("Bearer", loginResult.Token);
-                
-                await SaveAttachment("Login_Response.json", loginResponseContent);
-            });
+            var loginRequest = new 
+            { 
+                username = AdminEmail, 
+                password = AdminPassword 
+            };
+            
+            var loginPayload = JsonSerializer.Serialize(loginRequest, JsonOptions);
+            using var loginContent = new StringContent(loginPayload, Encoding.UTF8, "application/json");
+            
+            var loginResponse = await _client.PostAsync("/api/v1/auth/login", loginContent);
+            
+            // Validate response
+            loginResponse.StatusCode.Should().Be(HttpStatusCode.OK, 
+                "Login should succeed with valid admin credentials");
+            
+            var loginResponseContent = await loginResponse.Content.ReadAsStringAsync();
+            loginResponseContent.Should().NotBeNullOrWhiteSpace("Response should contain data");
+            
+            var loginResult = JsonSerializer.Deserialize<LoginResponse>(loginResponseContent, JsonOptions);
+            
+            loginResult.Should().NotBeNull("Login response should not be null");
+            loginResult!.Token.Should().NotBeNullOrEmpty("JWT token should be provided");
+            loginResult.Username.Should().Be(AdminEmail, "Should return the authenticated user's email");
+            
+            // Set authentication token for subsequent requests
+            _client.DefaultRequestHeaders.Authorization = 
+                new AuthenticationHeaderValue("Bearer", loginResult.Token);
+            
+            await SaveAttachment("Login_Response.json", loginResponseContent);
 
             // STEP 2: Get clients with pagination and filtering
-            await ExecuteStep("Retrieve Client List", async () =>
-            {
-                var clientsResponse = await _client.GetAsync("/api/v1/clients?page=1&pageSize=10");
-                
-                clientsResponse.StatusCode.Should().Be(HttpStatusCode.OK, 
-                    "Should successfully retrieve clients list");
-                
-                var clientsContent = await clientsResponse.Content.ReadAsStringAsync();
-                clientsContent.Should().NotBeNullOrWhiteSpace("Clients data should not be empty");
-                
-                // Validate response structure
-                var clientsData = JsonSerializer.Deserialize<ClientsListResponse>(clientsContent, JsonOptions);
-                clientsData.Should().NotBeNull("Clients response should not be null");
-                
-                await SaveAttachment("Clients_Response.json", clientsContent);
-            });
+            var clientsResponse = await _client.GetAsync("/api/v1/clients?page=1&pageSize=10");
+            
+            clientsResponse.StatusCode.Should().Be(HttpStatusCode.OK, 
+                "Should successfully retrieve clients list");
+            
+            var clientsContent = await clientsResponse.Content.ReadAsStringAsync();
+            clientsContent.Should().NotBeNullOrWhiteSpace("Clients data should not be empty");
+            
+            // Validate response structure
+            var clientsData = JsonSerializer.Deserialize<ClientsListResponse>(clientsContent, JsonOptions);
+            clientsData.Should().NotBeNull("Clients response should not be null");
+            
+            await SaveAttachment("Clients_Response.json", clientsContent);
 
             // STEP 3: Access administrators endpoint with data validation
-            await ExecuteStep("Access Administrators Management", async () =>
-            {
-                var administratorsResponse = await _client.GetAsync("/api/v1/administrators");
-                
-                administratorsResponse.StatusCode.Should().Be(HttpStatusCode.OK, 
-                    "Should have access to administrators endpoint");
-                
-                var adminContent = await administratorsResponse.Content.ReadAsStringAsync();
-                
-                // Even if the list is empty, we should get valid response
-                adminContent.Should().NotBeNull("Administrators response should not be null");
-                
-                await SaveAttachment("Administrators_Response.json", adminContent);
-            });
+            var administratorsResponse = await _client.GetAsync("/api/v1/administrators");
+            
+            administratorsResponse.StatusCode.Should().Be(HttpStatusCode.OK, 
+                "Should have access to administrators endpoint");
+            
+            var adminContent = await administratorsResponse.Content.ReadAsStringAsync();
+            
+            // Even if the list is empty, we should get valid response
+            adminContent.Should().NotBeNull("Administrators response should not be null");
+            
+            await SaveAttachment("Administrators_Response.json", adminContent);
 
             // STEP 4: Get employees with detailed validation
-            await ExecuteStep("Retrieve Employees Data", async () =>
-            {
-                var employeesResponse = await _client.GetAsync("/api/v1/employees?includeInactive=false");
-                
-                employeesResponse.StatusCode.Should().Be(HttpStatusCode.OK, 
-                    "Should successfully retrieve employees list");
-                
-                var employeesContent = await employeesResponse.Content.ReadAsStringAsync();
-                
-                // Validate JSON structure
-                employeesContent.Should().NotBeNullOrWhiteSpace("Employees data should not be empty");
-                
-                await SaveAttachment("Employees_Response.json", employeesContent);
-            });
+            var employeesResponse = await _client.GetAsync("/api/v1/employees?includeInactive=false");
+            
+            employeesResponse.StatusCode.Should().Be(HttpStatusCode.OK, 
+                "Should successfully retrieve employees list");
+            
+            var employeesContent = await employeesResponse.Content.ReadAsStringAsync();
+            
+            // Validate JSON structure
+            employeesContent.Should().NotBeNullOrWhiteSpace("Employees data should not be empty");
+            
+            await SaveAttachment("Employees_Response.json", employeesContent);
 
             // STEP 5: Test specific client details
-            await ExecuteStep("Get Specific Client Details", async () =>
+            // First get a client ID from the list, or use a known test client
+            var clientsListResponse = await _client.GetAsync("/api/v1/clients?page=1&pageSize=5");
+            if (clientsListResponse.IsSuccessStatusCode)
             {
-                // First get a client ID from the list, or use a known test client
-                var clientsResponse = await _client.GetAsync("/api/v1/clients?page=1&pageSize=5");
-                if (clientsResponse.IsSuccessStatusCode)
+                var clientsListContent = await clientsListResponse.Content.ReadAsStringAsync();
+                var clientsListData = JsonSerializer.Deserialize<ClientsListResponse>(clientsListContent, JsonOptions);
+                
+                if (clientsListData?.Items != null && clientsListData.Items.Any())
                 {
-                    var clientsContent = await clientsResponse.Content.ReadAsStringAsync();
-                    var clientsData = JsonSerializer.Deserialize<ClientsListResponse>(clientsContent, JsonOptions);
+                    var firstClient = clientsListData.Items.First();
+                    var clientDetailsResponse = await _client.GetAsync($"/api/v1/clients/{firstClient.Id}");
                     
-                    if (clientsData?.Items != null && clientsData.Items.Any())
+                    clientDetailsResponse.StatusCode.Should().BeOneOf(
+                        new[] { HttpStatusCode.OK, HttpStatusCode.NotFound },
+                        "Client details should be accessible or properly handle missing clients");
+                    
+                    if (clientDetailsResponse.IsSuccessStatusCode)
                     {
-                        var firstClient = clientsData.Items.First();
-                        var clientDetailsResponse = await _client.GetAsync($"/api/v1/clients/{firstClient.Id}");
-                        
-                        clientDetailsResponse.StatusCode.Should().BeOneOf(
-                            new[] { HttpStatusCode.OK, HttpStatusCode.NotFound },
-                            "Client details should be accessible or properly handle missing clients");
-                        
-                        if (clientDetailsResponse.IsSuccessStatusCode)
-                        {
-                            var clientDetails = await clientDetailsResponse.Content.ReadAsStringAsync();
-                            await SaveAttachment($"Client_{firstClient.Id}_Details.json", clientDetails);
-                        }
+                        var clientDetails = await clientDetailsResponse.Content.ReadAsStringAsync();
+                        await SaveAttachment($"Client_{firstClient.Id}_Details.json", clientDetails);
                     }
                 }
-            });
+            }
         }
 
-        [AllureStory("Real API Security Validation")]
-        [AllureSeverity(SeverityLevel.critical)]
-        [AllureTag("Security")]
         [Fact(Timeout = 15000)]
         public async Task Unauthorized_Access_To_Protected_Endpoints_Should_Be_Blocked()
         {
@@ -188,49 +162,37 @@ namespace E2ETests
 
             foreach (var endpoint in protectedEndpoints)
             {
-                await ExecuteStep($"Test unauthorized access to {endpoint}", async () =>
+                var response = await unauthenticatedClient.GetAsync(endpoint);
+                
+                response.StatusCode.Should().Be(HttpStatusCode.Unauthorized, 
+                    $"Endpoint {endpoint} should require authentication");
+                
+                // Additional check for proper WWW-Authenticate header
+                if (response.Headers.Contains("WWW-Authenticate"))
                 {
-                    var response = await unauthenticatedClient.GetAsync(endpoint);
-                    
-                    response.StatusCode.Should().Be(HttpStatusCode.Unauthorized, 
-                        $"Endpoint {endpoint} should require authentication");
-                    
-                    // Additional check for proper WWW-Authenticate header
-                    if (response.Headers.Contains("WWW-Authenticate"))
-                    {
-                        response.Headers.WwwAuthenticate.Should().NotBeEmpty();
-                    }
-                });
+                    response.Headers.WwwAuthenticate.Should().NotBeEmpty();
+                }
             }
         }
 
-        [AllureStory("API Health Check")]
-        [AllureSeverity(SeverityLevel.normal)]
-        [AllureTag("Health")]
         [Fact(Timeout = 10000)]
         public async Task API_Health_Check_Should_Respond()
         {
-            await ExecuteStep("Check API Health Endpoint", async () =>
+            var healthResponse = await _client.GetAsync("/health");
+            
+            healthResponse.StatusCode.Should().BeOneOf(
+                new[] { HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable },
+                "Health endpoint should respond with expected status codes");
+            
+            if (healthResponse.IsSuccessStatusCode)
             {
-                var healthResponse = await _client.GetAsync("/health");
+                var healthContent = await healthResponse.Content.ReadAsStringAsync();
+                healthContent.Should().NotBeNullOrWhiteSpace("Health response should contain data");
                 
-                healthResponse.StatusCode.Should().BeOneOf(
-                    new[] { HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable },
-                    "Health endpoint should respond with expected status codes");
-                
-                if (healthResponse.IsSuccessStatusCode)
-                {
-                    var healthContent = await healthResponse.Content.ReadAsStringAsync();
-                    healthContent.Should().NotBeNullOrWhiteSpace("Health response should contain data");
-                    
-                    await SaveAttachment("Health_Response.txt", healthContent);
-                }
-            });
+                await SaveAttachment("Health_Response.txt", healthContent);
+            }
         }
 
-        [AllureStory("Invalid Login Attempts")]
-        [AllureSeverity(SeverityLevel.critical)]
-        [AllureTag("Security")]
         [Theory(Timeout = 15000)]
         [InlineData("wrong@email.com", "admin123", HttpStatusCode.Unauthorized)]
         [InlineData("admin@gh.com", "wrongpassword", HttpStatusCode.Unauthorized)]
@@ -238,70 +200,23 @@ namespace E2ETests
         [InlineData("admin@gh.com", "", HttpStatusCode.BadRequest)]
         public async Task Invalid_Login_Attempts_Should_Fail(string username, string password, HttpStatusCode expectedStatus)
         {
-            await ExecuteStep($"Test login with invalid credentials: {username}", async () =>
-            {
-                var loginRequest = new { username, password };
-                var loginPayload = JsonSerializer.Serialize(loginRequest, JsonOptions);
-                using var loginContent = new StringContent(loginPayload, Encoding.UTF8, "application/json");
-                
-                var loginResponse = await _client.PostAsync("/api/v1/auth/login", loginContent);
-                
-                loginResponse.StatusCode.Should().Be(expectedStatus, 
-                    $"Login with username '{username}' should return {expectedStatus}");
-                
-                if (loginResponse.StatusCode == HttpStatusCode.Unauthorized)
-                {
-                    var responseContent = await loginResponse.Content.ReadAsStringAsync();
-                    responseContent.Should().NotContain("Token", "No token should be provided for failed login");
-                }
-            });
-        }
-
-        // Helper methods for Allure steps
-        private async Task ExecuteStep(string name, Func<Task> action)
-        {
-            var stepResult = new StepResult { name = name };
+            var loginRequest = new { username, password };
+            var loginPayload = JsonSerializer.Serialize(loginRequest, JsonOptions);
+            using var loginContent = new StringContent(loginPayload, Encoding.UTF8, "application/json");
             
-            AllureLifecycle.Instance.StartStep(stepResult);
-            try
-            {
-                await action();
-                AllureLifecycle.Instance.UpdateStep(step => step.status = Status.passed);
-            }
-            catch (Exception ex)
-            {
-                AllureLifecycle.Instance.UpdateStep(step =>
-                {
-                    step.status = Status.failed;
-                    step.statusDetails = new StatusDetails
-                    {
-                        message = ex.Message,
-                        trace = ex.StackTrace
-                    };
-                });
-                throw;
-            }
-            finally
-            {
-                AllureLifecycle.Instance.StopStep();
-            }
-        }
-
-        // Simple file-based attachment for Allure
-        private async Task SaveAttachment(string filename, string content)
-        {
-            var attachmentsDir = Path.Combine(Directory.GetCurrentDirectory(), "allure-results");
-            Directory.CreateDirectory(attachmentsDir);
+            var loginResponse = await _client.PostAsync("/api/v1/auth/login", loginContent);
             
-            var filePath = Path.Combine(attachmentsDir, filename);
-            await File.WriteAllTextAsync(filePath, content);
+            loginResponse.StatusCode.Should().Be(expectedStatus, 
+                $"Login with username '{username}' should return {expectedStatus}");
             
-            // For Allure reporting, files in allure-results directory are automatically attached
+            if (loginResponse.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                var responseContent = await loginResponse.Content.ReadAsStringAsync();
+                responseContent.Should().NotContain("Token", "No token should be provided for failed login");
+            }
         }
 
         // Упрощенная версия без сложных шагов
-        [AllureStory("Simplified Administrator Journey")]
-        [AllureSeverity(SeverityLevel.critical)]
         [Fact(Timeout = 30000)]
         public async Task Administrator_Simplified_Journey_Should_Succeed()
         {
@@ -342,6 +257,16 @@ namespace E2ETests
                 // Save response to file for manual inspection
                 await SaveAttachment($"{endpoint.Replace("/", "_")}_response.json", content);
             }
+        }
+
+        // Simple file-based attachment
+        private async Task SaveAttachment(string filename, string content)
+        {
+            var attachmentsDir = Path.Combine(Directory.GetCurrentDirectory(), "test-results");
+            Directory.CreateDirectory(attachmentsDir);
+            
+            var filePath = Path.Combine(attachmentsDir, filename);
+            await File.WriteAllTextAsync(filePath, content);
         }
 
         public void Dispose()
