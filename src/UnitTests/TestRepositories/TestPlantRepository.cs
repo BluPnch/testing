@@ -57,7 +57,7 @@ namespace UnitTests.TestRepositories
         [Fact]
         [AllureName("Create plant - should add plant to database")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.critical)]
+        [AllureSeverity(SeverityLevel.Critical)]
         public async Task CreatePlantAsync_ShouldAddPlant()
         {
             var client = await CreateTestClientAsync();
@@ -104,7 +104,7 @@ namespace UnitTests.TestRepositories
         [Fact]
         [AllureName("Get plant by ID - should return plant when exists")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.critical)]
+        [AllureSeverity(SeverityLevel.Critical)]
         public async Task GetPlantByIdAsync_ShouldReturnPlant_WhenExists()
         {
             var client = await CreateTestClientAsync();
@@ -177,7 +177,7 @@ namespace UnitTests.TestRepositories
         [Fact]
         [AllureName("Update plant - should update plant data")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.critical)]
+        [AllureSeverity(SeverityLevel.Critical)]
         public async Task UpdatePlantAsync_ShouldUpdatePlant()
         {
             var client = await CreateTestClientAsync();
@@ -259,7 +259,7 @@ namespace UnitTests.TestRepositories
         [Fact]
         [AllureName("Delete plant - should remove plant from database")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.critical)]
+        [AllureSeverity(SeverityLevel.Critical)]
         public async Task DeletePlantAsync_ShouldRemovePlant()
         {
             var client = await CreateTestClientAsync();

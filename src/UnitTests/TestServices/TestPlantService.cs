@@ -49,7 +49,7 @@ namespace UnitTests.TestServices
         [Fact]
         [AllureName("Create plant - should create plant when valid data")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.critical)]
+        [AllureSeverity(SeverityLevel.Critical)]
         public async Task CreatePlantAsync_ShouldCreatePlant_WhenValidData()
         {
             await AllureApi.Step("Setup valid plant and client data", () => {
@@ -248,7 +248,7 @@ namespace UnitTests.TestServices
         [Fact]
         [AllureName("Update plant - should update plant when valid data")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.critical)]
+        [AllureSeverity(SeverityLevel.Critical)]
         public async Task UpdatePlantAsync_ShouldUpdatePlant_WhenValidData()
         {
             await AllureApi.Step("Setup valid plant for update", () => {
@@ -344,7 +344,7 @@ namespace UnitTests.TestServices
         [Fact]
         [AllureName("Get plant by ID - should return plant when exists")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.critical)]
+        [AllureSeverity(SeverityLevel.Critical)]
         public async Task GetPlantByIdAsync_ShouldReturnPlant_WhenExists()
         {
             var plantId = Guid.NewGuid();

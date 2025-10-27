@@ -92,7 +92,7 @@ namespace UnitTests.TestRepositories
         [Fact]
         [AllureName("Add journal record - should add record to database")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.critical)]
+        [AllureSeverity(SeverityLevel.Critical)]
         public async Task AddJournalRecordAsync_ShouldAddRecordToDatabase()
         {
             var (plantId, growthStageId, employeeId) = await SetupDependenciesAsync();
@@ -182,7 +182,7 @@ namespace UnitTests.TestRepositories
         [Fact]
         [AllureName("Get journal record by ID - should return record when exists")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.critical)]
+        [AllureSeverity(SeverityLevel.Critical)]
         public async Task GetJournalRecordByIdAsync_ShouldReturnRecord_WhenExists()
         {
             var (plantId, growthStageId, employeeId) = await SetupDependenciesAsync();
@@ -232,7 +232,7 @@ namespace UnitTests.TestRepositories
         [Fact]
         [AllureName("Update journal record - should update record data")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.critical)]
+        [AllureSeverity(SeverityLevel.Critical)]
         public async Task UpdateJournalRecordAsync_ShouldUpdateRecord()
         {
             var (plantId, growthStageId, employeeId) = await SetupDependenciesAsync();
@@ -297,7 +297,7 @@ namespace UnitTests.TestRepositories
         [Fact]
         [AllureName("Delete journal record - should remove record from database")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.critical)]
+        [AllureSeverity(SeverityLevel.Critical)]
         public async Task DeleteJournalRecordAsync_ShouldRemoveRecord()
         {
             var (plantId, growthStageId, employeeId) = await SetupDependenciesAsync();

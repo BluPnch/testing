@@ -42,7 +42,7 @@ namespace UnitTests.TestRepositories
         [Fact]
         [AllureName("Create growth stage - should add growth stage")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.critical)]
+        [AllureSeverity(SeverityLevel.Critical)]
         public async Task CreateGrowthStageAsync_ShouldAddGrowthStage()
         {
             await AllureApi.Step("Setup growth stage", () => {
@@ -112,7 +112,7 @@ namespace UnitTests.TestRepositories
         [Fact]
         [AllureName("Get growth stage by ID - should return stage when exists")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.critical)]
+        [AllureSeverity(SeverityLevel.Critical)]
         public async Task GetGrowthStageByIdAsync_ShouldReturnStage_WhenExists()
         {
             var stageId = Guid.NewGuid();
@@ -157,7 +157,7 @@ namespace UnitTests.TestRepositories
         [Fact]
         [AllureName("Update growth stage - should update stage data")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.critical)]
+        [AllureSeverity(SeverityLevel.Critical)]
         public async Task UpdateGrowthStageAsync_ShouldUpdateStage()
         {
             var stageId = Guid.NewGuid();
@@ -213,7 +213,7 @@ namespace UnitTests.TestRepositories
         [Fact]
         [AllureName("Delete growth stage - should remove stage from database")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.critical)]
+        [AllureSeverity(SeverityLevel.Critical)]
         public async Task DeleteGrowthStageAsync_ShouldRemoveStage()
         {
             var stageId = Guid.NewGuid();

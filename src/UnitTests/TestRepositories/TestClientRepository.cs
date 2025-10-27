@@ -42,7 +42,7 @@ namespace UnitTests.TestRepositories
         [Fact]
         [AllureName("Create client - should add client to database")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.critical)]
+        [AllureSeverity(SeverityLevel.Critical)]
         public async Task CreateClientAsync_ShouldAddClientToDatabase()
         {
             await AllureApi.Step("Setup test data", async () => {
@@ -89,7 +89,7 @@ namespace UnitTests.TestRepositories
         [Fact]
         [AllureName("Get client by ID - should return client when exists")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.critical)]
+        [AllureSeverity(SeverityLevel.Critical)]
         public async Task GetClientByIdAsync_ShouldReturnClient_WhenExists()
         {
             var clientId = Guid.NewGuid();
@@ -136,7 +136,7 @@ namespace UnitTests.TestRepositories
         [Fact]
         [AllureName("Get client by company name - should return client when exists")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.critical)]
+        [AllureSeverity(SeverityLevel.Critical)]
         public async Task GetClientByCompanyNameAsync_ShouldReturnClient_WhenExists()
         {
             var companyName = "Test Company";
@@ -258,7 +258,7 @@ namespace UnitTests.TestRepositories
         [Fact]
         [AllureName("Delete client - should remove client from database")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.critical)]
+        [AllureSeverity(SeverityLevel.Critical)]
         public async Task DeleteClientAsync_ShouldRemoveClientFromDatabase()
         {
             var clientId = Guid.NewGuid();

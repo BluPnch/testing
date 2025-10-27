@@ -41,7 +41,7 @@ namespace UnitTests.TestRepositories
         [Fact]
         [AllureName("Get all administrators - should return all")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.critical)]
+        [AllureSeverity(SeverityLevel.Critical)]
         public async Task GetAllAdministratorsAsync_ShouldReturnAllAdministrators()
         {
             await AllureApi.Step("Setup test data", async () => {
@@ -131,7 +131,7 @@ namespace UnitTests.TestRepositories
         [Fact]
         [AllureName("Create administrator - should add to database")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.critical)]
+        [AllureSeverity(SeverityLevel.Critical)]
         public async Task CreateAdministratorAsync_ShouldAddAdministratorToDatabase()
         {
             var adminId = Guid.NewGuid();

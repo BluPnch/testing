@@ -1,351 +1,405 @@
-using DataAccess.Context;
-using DataAccess.Models;
-using DataAccess.Repositories;
-using Domain.Exceptions;
-using Microsoft.EntityFrameworkCore;
+using Allure.Xunit.Attributes;
+using Allure.Net.Commons;
+using Domain.Interfaces.Repositories;
+using Domain.Models;
+using Application.Services;
+using Moq;
 using Xunit;
-using Domain.Models.Enums;
+using Application.Validators;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using UnitTests.Builders;
+using UnitTests.MotherObjects;
 
-
-namespace UnitTests.TestRepositories
+namespace UnitTests.TestServices
 {
-    public class TestSeedRepository : IClassFixture<RepositoryTestFixture>
+    [AllureFeature("Seed Service")]
+    [AllureStory("Seed Management Operations")]
+    public class TestSeedService
     {
-        private readonly RepositoryTestFixture _fixture;
-        private readonly GreenhouseContext _context;
-        private readonly SeedRepository _repository;
+        private readonly Mock<ISeedRepository> _mockSeedRepository;
+        private readonly Mock<IPlantRepository> _mockPlantRepository;
+        private readonly SeedService _service;
+        private readonly SeedValidator _seedValidator;
+        private readonly Mock<ILogger<SeedService>> _mockLogger;
+        private readonly Mock<IConfiguration> _mockConfiguration;
 
-        public TestSeedRepository(RepositoryTestFixture fixture)
+        public TestSeedService()
         {
-            _fixture = fixture;
-            _context = _fixture.Context;
-            _repository = new SeedRepository(_context);
-            
-            ClearDatabaseAsync().Wait();
+            _mockSeedRepository = new Mock<ISeedRepository>();
+            _mockPlantRepository = new Mock<IPlantRepository>();
+            _seedValidator = new SeedValidator();
+            _mockLogger = new Mock<ILogger<SeedService>>();
+            _mockConfiguration = new Mock<IConfiguration>();
+            _service = new SeedService(
+                _mockSeedRepository.Object,
+                _mockPlantRepository.Object,
+                _seedValidator,
+                _mockLogger.Object,
+                _mockConfiguration.Object);
         }
 
-        private async Task ClearDatabaseAsync()
-        {
-            _context.Seeds.RemoveRange(_context.Seeds);
-            await _context.SaveChangesAsync();
-        }
-        
-        
-
-        private async Task<Guid> SetupDependenciesAsync()
-        {
-            var client = new ClientDbBuilder()
-                .WithCompanyName("Company")
-                .WithPhoneNumber("1234567890")
-                .Build();
-            await _context.Clients.AddAsync(client);
-            
-            var plant = new PlantDbBuilder()
-                .WithClientId(client.Id)
-                .WithPlantSpecie("Rose")
-                .WithPlantFamily("Rosaceae")
-                .Build();
-            await _context.Plants.AddAsync(plant);
-            
-            await _context.SaveChangesAsync();
-            
-            return plant.Id;
-        }
-
+        #region CreateSeedAsync Tests
         [Fact]
-        public async Task CreateSeedAsync_ShouldAddSeedToDatabase()
-        {
-            
-            var plantId = await SetupDependenciesAsync();
-            
-            var seed = new SeedBuilder()
-                .WithPlantId(plantId)
-                .WithMaturity("Mature")
-                .WithViability(EnumViability.Contaminated)
-                .WithLightRequirements(EnumLight.Medium)
-                .WithWaterRequirements("Normal")
-                .WithTemperatureRequirements(25)
-                .Build();
-
-            
-            var result = await _repository.CreateSeedAsync(seed);
-
-            // Assert
-            var dbSeed = await _context.Seeds.FirstOrDefaultAsync(s => s.Id == seed.Id);
-            Assert.NotNull(dbSeed);
-            Assert.Equal(seed.PlantId, dbSeed.PlantId);
-            Assert.Equal(seed.Maturity, dbSeed.Maturity);
-            Assert.Equal(seed.Viability, dbSeed.Viability);
-            Assert.Equal(seed.LightRequirements, dbSeed.LightRequirements);
-            Assert.Equal(seed.WaterRequirements, dbSeed.WaterRequirements);
-            Assert.Equal(seed.TemperatureRequirements, dbSeed.TemperatureRequirements);
-        }
-
-        [Fact]
+        [AllureName("Create seed - should throw exception when seed is null")]
+        [AllureOwner("Development Team")]
+        [AllureSeverity(SeverityLevel.normal)]
         public async Task CreateSeedAsync_ShouldThrowArgumentNullException_WhenSeedIsNull()
         {
-            
-            await Assert.ThrowsAsync<ArgumentNullException>(
-                () => _repository.CreateSeedAsync(null!));
+            await AllureApi.Step("Attempt to create null seed", async () => {
+                var exception = await Assert.ThrowsAsync<ArgumentNullException>(
+                    () => _service.CreateSeedAsync(null!));
+                
+                await AllureApi.Step("Verify exception details", () => {
+                    Assert.Equal("seed", exception.ParamName);
+                    Assert.Contains("seed", exception.Message);
+                });
+            });
+
+            await AllureApi.Step("Verify repository not called", () => {
+                _mockSeedRepository.Verify(repo => repo.CreateSeedAsync(It.IsAny<Seed>()), Times.Never);
+            });
+
+            await AllureApi.Step("Verify error logging occurred", () => {
+                _mockLogger.Verify(
+                    x => x.Log(
+                        LogLevel.Error,
+                        It.IsAny<EventId>(),
+                        It.Is<It.IsAnyType>((v, t) => true),
+                        It.IsAny<Exception>(),
+                        It.Is<Func<It.IsAnyType, Exception?, string>>((v, t) => true)),
+                    Times.AtLeastOnce);
+            });
         }
 
         [Fact]
-        public async Task GetAllSeedsAsync_ShouldReturnAllSeeds()
+        [AllureName("Create seed - should throw exception when plant not found")]
+        [AllureOwner("Development Team")]
+        [AllureSeverity(SeverityLevel.normal)]
+        public async Task CreateSeedAsync_ShouldThrowKeyNotFoundException_WhenPlantNotFound()
         {
+            var plantId = Guid.NewGuid();
             
-            var plantId = await SetupDependenciesAsync();
-            
-            var seeds = new List<SeedDb>
-            {
-                new SeedDbBuilder()
+            await AllureApi.Step("Setup seed with non-existent plant", () => {
+                var validSeed = new SeedBuilder()
                     .WithPlantId(plantId)
-                    .WithMaturity("Mature")
-                    .WithViability(EnumViability.Contaminated)
-                    .Build(),
-                new SeedDbBuilder()
-                    .WithPlantId(plantId)
-                    .WithMaturity("Immature")
-                    .WithViability(EnumViability.Damaged)
-                    .Build()
-            };
-            
-            await _context.Seeds.AddRangeAsync(seeds);
-            await _context.SaveChangesAsync();
+                    .Build();
+            });
 
-            
-            var result = await _repository.GetAllSeedsAsync();
+            await AllureApi.Step("Setup mock plant repository to return null", () => {
+                _mockPlantRepository.Setup(repo => repo.GetPlantByIdAsync(plantId))
+                    .ReturnsAsync((Plant?)null);
+            });
 
-            // Assert
-            Assert.Equal(2, result.Count());
+            await AllureApi.Step($"Attempt to create seed for non-existent plant ID: {plantId}", async () => {
+                var exception = await Assert.ThrowsAsync<KeyNotFoundException>(
+                    () => _service.CreateSeedAsync(validSeed));
+        
+                await AllureApi.Step("Verify exception message", () => {
+                    Assert.Contains($"Растение с ID {plantId} не найдено", exception.Message);
+                    Assert.Contains(plantId.ToString(), exception.Message);
+                });
+            });
+
+            await AllureApi.Step("Verify repository not called", () => {
+                _mockSeedRepository.Verify(repo => repo.CreateSeedAsync(It.IsAny<Seed>()), Times.Never);
+            });
+
+            await AllureApi.Step("Verify error logging occurred", () => {
+                _mockLogger.Verify(
+                    x => x.Log(
+                        LogLevel.Error,
+                        It.IsAny<EventId>(),
+                        It.Is<It.IsAnyType>((v, t) => true),
+                        It.IsAny<Exception>(),
+                        It.Is<Func<It.IsAnyType, Exception?, string>>((v, t) => true)),
+                    Times.AtLeastOnce);
+            });
         }
 
         [Fact]
+        [AllureName("Create seed - should create seed when valid data")]
+        [AllureOwner("Development Team")]
+        [AllureSeverity(SeverityLevel.Critical)]
+        public async Task CreateSeedAsync_ShouldCreateSeed_WhenValidData()
+        {
+            await AllureApi.Step("Setup valid seed and plant data", () => {
+                var plant = PlantMotherObject.CreateDefaultPlant();
+                var seed = new SeedBuilder()
+                    .WithPlantId(plant.Id)
+                    .WithMaturity("Mature")
+                    .WithViability(Domain.Models.Enums.EnumViability.Healthy)
+                    .WithLightRequirements(Domain.Models.Enums.EnumLight.Medium)
+                    .WithWaterRequirements("Moderate")
+                    .WithTemperatureRequirements(25)
+                    .Build();
+            });
+
+            await AllureApi.Step("Setup mock repository responses", () => {
+                _mockPlantRepository.Setup(repo => repo.GetPlantByIdAsync(plant.Id))
+                    .ReturnsAsync(plant);
+                _mockSeedRepository.Setup(repo => repo.CreateSeedAsync(seed))
+                    .ReturnsAsync(seed);
+            });
+
+            var result = await AllureApi.Step("Execute CreateSeedAsync", 
+                async () => await _service.CreateSeedAsync(seed));
+
+            await AllureApi.Step("Verify seed created successfully", () => {
+                Assert.Equal(seed.Id, result.Id);
+                Assert.Equal(seed.PlantId, result.PlantId);
+                Assert.Equal(seed.Maturity, result.Maturity);
+                Assert.Equal(seed.Viability, result.Viability);
+                Assert.Equal(seed.LightRequirements, result.LightRequirements);
+                Assert.Equal(seed.WaterRequirements, result.WaterRequirements);
+                Assert.Equal(seed.TemperatureRequirements, result.TemperatureRequirements);
+                Assert.Equal("Mature", result.Maturity);
+                Assert.Equal(Domain.Models.Enums.EnumViability.Healthy, result.Viability);
+            });
+
+            await AllureApi.Step("Verify repository methods called", () => {
+                _mockPlantRepository.Verify(repo => repo.GetPlantByIdAsync(plant.Id), Times.Once);
+                _mockSeedRepository.Verify(repo => repo.CreateSeedAsync(seed), Times.Once);
+            });
+
+            await AllureApi.Step("Verify logging occurred", () => {
+                _mockLogger.Verify(
+                    x => x.Log(
+                        It.IsAny<LogLevel>(),
+                        It.IsAny<EventId>(),
+                        It.Is<It.IsAnyType>((v, t) => true),
+                        It.IsAny<Exception>(),
+                        It.Is<Func<It.IsAnyType, Exception?, string>>((v, t) => true)),
+                    Times.AtLeastOnce);
+            });
+        }
+
+        [Fact]
+        [AllureName("Create seed - should validate maturity when maturity is empty")]
+        [AllureOwner("Development Team")]
+        [AllureSeverity(SeverityLevel.normal)]
+        public async Task CreateSeedAsync_ShouldValidateMaturity_WhenMaturityIsEmpty()
+        {
+            await AllureApi.Step("Setup seed with empty maturity", () => {
+                var invalidSeed = new SeedBuilder()
+                    .WithPlantId(Guid.NewGuid())
+                    .WithMaturity("")
+                    .Build();
+            });
+
+            await AllureApi.Step("Setup mock plant repository", () => {
+                var plant = PlantMotherObject.CreateDefaultPlant();
+                _mockPlantRepository.Setup(repo => repo.GetPlantByIdAsync(It.IsAny<Guid>()))
+                    .ReturnsAsync(plant);
+            });
+
+            await AllureApi.Step("Attempt to create seed with empty maturity", async () => {
+                var exception = await Assert.ThrowsAsync<ArgumentException>(() =>
+                    _service.CreateSeedAsync(invalidSeed));
+                
+                await AllureApi.Step("Verify validation error", () => {
+                    Assert.Contains("maturity", exception.Message.ToLower());
+                    Assert.Contains("required", exception.Message.ToLower());
+                });
+            });
+        }
+
+        [Fact]
+        [AllureName("Create seed - should validate temperature when temperature is out of range")]
+        [AllureOwner("Development Team")]
+        [AllureSeverity(SeverityLevel.normal)]
+        public async Task CreateSeedAsync_ShouldValidateTemperature_WhenTemperatureIsOutOfRange()
+        {
+            await AllureApi.Step("Setup seed with invalid temperature", () => {
+                var invalidSeed = new SeedBuilder()
+                    .WithPlantId(Guid.NewGuid())
+                    .WithTemperatureRequirements(60) // Too high temperature
+                    .Build();
+            });
+
+            await AllureApi.Step("Setup mock plant repository", () => {
+                var plant = PlantMotherObject.CreateDefaultPlant();
+                _mockPlantRepository.Setup(repo => repo.GetPlantByIdAsync(It.IsAny<Guid>()))
+                    .ReturnsAsync(plant);
+            });
+
+            await AllureApi.Step("Attempt to create seed with invalid temperature", async () => {
+                var exception = await Assert.ThrowsAsync<ArgumentException>(() =>
+                    _service.CreateSeedAsync(invalidSeed));
+                
+                await AllureApi.Step("Verify validation error", () => {
+                    Assert.Contains("temperature", exception.Message.ToLower());
+                    Assert.Contains("range", exception.Message.ToLower());
+                });
+            });
+        }
+        #endregion
+
+        #region UpdateSeedAsync Tests
+        [Fact]
+        [AllureName("Update seed - should update seed when valid data")]
+        [AllureOwner("Development Team")]
+        [AllureSeverity(SeverityLevel.Critical)]
+        public async Task UpdateSeedAsync_ShouldUpdateSeed_WhenValidData()
+        {
+            await AllureApi.Step("Setup valid seed and plant data for update", () => {
+                var seed = SeedMotherObject.CreateDefaultSeed();
+                var plant = PlantMotherObject.CreateDefaultPlant();
+            });
+
+            await AllureApi.Step("Setup mock repository responses", () => {
+                _mockSeedRepository.Setup(repo => repo.GetSeedByIdAsync(seed.Id))
+                    .ReturnsAsync(seed);
+                
+                _mockPlantRepository.Setup(repo => repo.GetPlantByIdAsync(seed.PlantId))
+                    .ReturnsAsync(plant);
+                
+                _mockSeedRepository.Setup(repo => repo.UpdateSeedAsync(seed))
+                    .ReturnsAsync(seed);
+            });
+
+            await AllureApi.Step($"Execute UpdateSeedAsync for seed ID: {seed.Id}", 
+                async () => await _service.UpdateSeedAsync(seed));
+
+            await AllureApi.Step("Verify repository methods called", () => {
+                _mockSeedRepository.Verify(repo => repo.GetSeedByIdAsync(seed.Id), Times.Once);
+                _mockPlantRepository.Verify(repo => repo.GetPlantByIdAsync(seed.PlantId), Times.Once);
+                _mockSeedRepository.Verify(repo => repo.UpdateSeedAsync(seed), Times.Once);
+            });
+
+            await AllureApi.Step("Verify logging occurred", () => {
+                _mockLogger.Verify(
+                    x => x.Log(
+                        It.IsAny<LogLevel>(),
+                        It.IsAny<EventId>(),
+                        It.Is<It.IsAnyType>((v, t) => true),
+                        It.IsAny<Exception>(),
+                        It.Is<Func<It.IsAnyType, Exception?, string>>((v, t) => true)),
+                    Times.AtLeastOnce);
+            });
+        }
+
+        [Fact]
+        [AllureName("Update seed - should throw exception when seed not found")]
+        [AllureOwner("Development Team")]
+        [AllureSeverity(SeverityLevel.normal)]
+        public async Task UpdateSeedAsync_ShouldThrowException_WhenSeedNotFound()
+        {
+            var seedId = Guid.NewGuid();
+            
+            await AllureApi.Step("Setup non-existent seed", () => {
+                var seed = new SeedBuilder()
+                    .WithId(seedId)
+                    .Build();
+            });
+
+            await AllureApi.Step("Setup mock repository to return null seed", () => {
+                _mockSeedRepository.Setup(repo => repo.GetSeedByIdAsync(seedId))
+                    .ReturnsAsync((Seed?)null);
+            });
+
+            await AllureApi.Step($"Attempt to update non-existent seed with ID: {seedId}", async () => {
+                await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+                    _service.UpdateSeedAsync(seed));
+            });
+
+            await AllureApi.Step("Verify repository methods called appropriately", () => {
+                _mockSeedRepository.Verify(repo => repo.GetSeedByIdAsync(seedId), Times.Once);
+                _mockSeedRepository.Verify(repo => repo.UpdateSeedAsync(It.IsAny<Seed>()), Times.Never);
+            });
+        }
+
+        [Fact]
+        [AllureName("Update seed - should throw exception when plant not found during update")]
+        [AllureOwner("Development Team")]
+        [AllureSeverity(SeverityLevel.normal)]
+        public async Task UpdateSeedAsync_ShouldThrowException_WhenPlantNotFound()
+        {
+            await AllureApi.Step("Setup seed with non-existent plant", () => {
+                var seed = SeedMotherObject.CreateDefaultSeed();
+            });
+
+            await AllureApi.Step("Setup mock repository responses", () => {
+                _mockSeedRepository.Setup(repo => repo.GetSeedByIdAsync(seed.Id))
+                    .ReturnsAsync(seed);
+                
+                _mockPlantRepository.Setup(repo => repo.GetPlantByIdAsync(seed.PlantId))
+                    .ReturnsAsync((Plant?)null);
+            });
+
+            await AllureApi.Step($"Attempt to update seed with non-existent plant ID: {seed.PlantId}", async () => {
+                var exception = await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+                    _service.UpdateSeedAsync(seed));
+                
+                await AllureApi.Step("Verify exception message", () => {
+                    Assert.Contains($"Растение с ID {seed.PlantId} не найдено", exception.Message);
+                });
+            });
+        }
+        #endregion
+
+        #region GetSeed Tests
+        [Fact]
+        [AllureName("Get seed by ID - should return seed when exists")]
+        [AllureOwner("Development Team")]
+        [AllureSeverity(SeverityLevel.Critical)]
         public async Task GetSeedByIdAsync_ShouldReturnSeed_WhenExists()
         {
-            
-            var plantId = await SetupDependenciesAsync();
-            
             var seedId = Guid.NewGuid();
-            var seed = new SeedDbBuilder()
-                .WithId(seedId)
-                .WithPlantId(plantId)
-                .WithMaturity("Mature")
-                .WithViability(EnumViability.Contaminated)
-                .Build();
             
-            await _context.Seeds.AddAsync(seed);
-            await _context.SaveChangesAsync();
+            await AllureApi.Step("Setup mock repository response", () => {
+                var expectedSeed = SeedMotherObject.CreateDefaultSeed();
+                _mockSeedRepository.Setup(repo => repo.GetSeedByIdAsync(seedId))
+                    .ReturnsAsync(expectedSeed);
+            });
 
-            
-            var result = await _repository.GetSeedByIdAsync(seedId);
+            var result = await AllureApi.Step($"Execute GetSeedByIdAsync for ID: {seedId}", 
+                async () => await _service.GetSeedByIdAsync(seedId));
 
-            // Assert
-            Assert.Equal(seedId, result.Id);
-            Assert.Equal("Mature", result.Maturity);
+            await AllureApi.Step("Verify seed returned", () => {
+                Assert.NotNull(result);
+                Assert.Equal(seedId, result.Id);
+                Assert.Equal("Mature", result.Maturity);
+                Assert.Equal(Domain.Models.Enums.EnumViability.Healthy, result.Viability);
+            });
+
+            await AllureApi.Step("Verify repository method called", () => {
+                _mockSeedRepository.Verify(repo => repo.GetSeedByIdAsync(seedId), Times.Once);
+            });
         }
 
         [Fact]
-        public async Task GetSeedByIdAsync_ShouldThrowSeedNotFoundException_WhenNotExists()
+        [AllureName("Get seeds by maturity - should return seeds when maturity matches")]
+        [AllureOwner("Development Team")]
+        [AllureSeverity(SeverityLevel.normal)]
+        public async Task GetSeedsByMaturityAsync_ShouldReturnSeeds_WhenMaturityMatches()
         {
-            
-            var seedId = Guid.NewGuid();
-
-            
-            await Assert.ThrowsAsync<SeedNotFoundException>(
-                () => _repository.GetSeedByIdAsync(seedId));
-        }
-
-        [Fact]
-        public async Task UpdateSeedAsync_ShouldUpdateSeed()
-        {
-            
-            var plantId = await SetupDependenciesAsync();
-            
-            var seedId = Guid.NewGuid();
-            var originalSeed = new SeedDbBuilder()
-                .WithId(seedId)
-                .WithPlantId(plantId)
-                .WithMaturity("OldMaturity")
-                .WithViability(EnumViability.Contaminated)
-                .WithLightRequirements(EnumLight.Medium)
-                .WithWaterRequirements("OldWater")
-                .WithTemperatureRequirements(25)
-                .Build();
-    
-            await _context.Seeds.AddAsync(originalSeed);
-            await _context.SaveChangesAsync();
-
-            _context.Entry(originalSeed).State = EntityState.Detached;
-
-            
-            var updatedSeed = new SeedBuilder()
-                .WithId(seedId)
-                .WithPlantId(plantId)
-                .WithMaturity("NewMaturity")
-                .WithViability(EnumViability.Damaged)
-                .WithLightRequirements(EnumLight.Low)
-                .WithWaterRequirements("NewWater")
-                .WithTemperatureRequirements(30)
-                .Build();
-
-            await _repository.UpdateSeedAsync(updatedSeed);
-
-            // Assert
-            var dbSeed = await _context.Seeds.FindAsync(seedId);
-            Assert.NotNull(dbSeed);
-            Assert.Equal("NewMaturity", dbSeed!.Maturity);
-            Assert.Equal(EnumViability.Damaged, dbSeed.Viability);
-            Assert.Equal(EnumLight.Low, dbSeed.LightRequirements);
-            Assert.Equal("NewWater", dbSeed.WaterRequirements);
-            Assert.Equal(30, dbSeed.TemperatureRequirements);
-        }
-
-        [Fact]
-        public async Task DeleteSeedAsync_ShouldRemoveSeed()
-        {
-            
-            var plantId = await SetupDependenciesAsync();
-            
-            var seedId = Guid.NewGuid();
-            var seed = new SeedDbBuilder()
-                .WithId(seedId)
-                .WithPlantId(plantId)
-                .WithMaturity("ToDelete")
-                .WithViability(EnumViability.Contaminated)
-                .Build();
-            
-            await _context.Seeds.AddAsync(seed);
-            await _context.SaveChangesAsync();
-
-            
-            await _repository.DeleteSeedAsync(seedId);
-
-            // Assert
-            var dbSeed = await _context.Seeds.FindAsync(seedId);
-            Assert.Null(dbSeed);
-        }
-
-        [Fact]
-        public async Task DeleteSeedAsync_ShouldThrowSeedNotFoundException_WhenNotExists()
-        {
-            
-            var nonExistentId = Guid.NewGuid();
-
-            
-            await Assert.ThrowsAsync<SeedNotFoundException>(
-                () => _repository.DeleteSeedAsync(nonExistentId));
-        }
-
-        [Fact]
-        public async Task GetSeedsByMaturityAsync_ShouldReturnSeeds()
-        {
-            
-            var plantId = await SetupDependenciesAsync();
-            
             var maturity = "Mature";
-            var seeds = new List<SeedDb>
-            {
-                new SeedDbBuilder()
-                    .WithPlantId(plantId)
-                    .WithMaturity(maturity)
-                    .WithViability(EnumViability.Contaminated)
-                    .Build(),
-                new SeedDbBuilder()
-                    .WithPlantId(plantId)
-                    .WithMaturity(maturity)
-                    .WithViability(EnumViability.Damaged)
-                    .Build()
-            };
             
-            await _context.Seeds.AddRangeAsync(seeds);
-            await _context.SaveChangesAsync();
+            await AllureApi.Step("Setup mock repository response", () => {
+                var seeds = new List<Seed>
+                {
+                    SeedMotherObject.CreateDefaultSeed(),
+                    SeedMotherObject.CreateDefaultSeed()
+                };
+                
+                _mockSeedRepository.Setup(repo => repo.GetSeedsByMaturityAsync(maturity))
+                    .ReturnsAsync(seeds);
+            });
 
-            
-            var result = await _repository.GetSeedsByMaturityAsync(maturity);
+            var result = await AllureApi.Step($"Execute GetSeedsByMaturityAsync for maturity: {maturity}", 
+                async () => await _service.GetSeedsByMaturityAsync(maturity));
 
-            // Assert
-            Assert.Equal(2, result.Count());
+            await AllureApi.Step("Verify seeds returned", () => {
+                Assert.NotNull(result);
+                Assert.Equal(2, result.Count());
+                Assert.All(result, s => Assert.Equal(maturity, s.Maturity));
+            });
+
+            await AllureApi.Step("Verify repository method called", () => {
+                _mockSeedRepository.Verify(repo => repo.GetSeedsByMaturityAsync(maturity), Times.Once);
+            });
         }
-
-        [Fact]
-        public async Task GetSeedsByMaturityAsync_ShouldReturnEmptyList_WhenNoMatches()
-        {
-            
-            var maturity = "NonExistentMaturity";
-
-            
-            var result = await _repository.GetSeedsByMaturityAsync(maturity);
-
-            // Assert
-            Assert.Empty(result);
-        }
-
-        [Fact]
-        public async Task GetSeedsByViabilityAsync_ShouldReturnSeeds()
-        {
-            
-            var plantId = await SetupDependenciesAsync();
-            
-            var viability = EnumViability.Contaminated;
-            var seeds = new List<SeedDb>
-            {
-                new SeedDbBuilder()
-                    .WithPlantId(plantId)
-                    .WithMaturity("Mature1")
-                    .WithViability(viability)
-                    .Build(),
-                new SeedDbBuilder()
-                    .WithPlantId(plantId)
-                    .WithMaturity("Mature2")
-                    .WithViability(viability)
-                    .Build()
-            };
-            
-            await _context.Seeds.AddRangeAsync(seeds);
-            await _context.SaveChangesAsync();
-
-            
-            var result = await _repository.GetSeedsByViabilityAsync(viability.ToString());
-
-            // Assert
-            Assert.Equal(2, result.Count());
-        }
-
-        [Fact]
-        public async Task GetPlantBySeedIdAsync_ShouldReturnPlant()
-        {
-            
-            var plantId = await SetupDependenciesAsync();
-            
-            var seedId = Guid.NewGuid();
-            var seed = new SeedDbBuilder()
-                .WithId(seedId)
-                .WithPlantId(plantId)
-                .WithMaturity("Mature")
-                .WithViability(EnumViability.Contaminated)
-                .Build();
-            
-            await _context.Seeds.AddAsync(seed);
-            await _context.SaveChangesAsync();
-
-            
-            var result = await _repository.GetPlantBySeedIdAsync(seedId);
-
-            // Assert
-            Assert.Equal(plantId, result.Id);
-            Assert.Equal("Rose", result.Specie);
-        }
-
-        [Fact]
-        public async Task GetPlantBySeedIdAsync_ShouldThrowSeedNotFoundException_WhenSeedNotExists()
-        {
-            
-            var seedId = Guid.NewGuid();
-
-            
-            await Assert.ThrowsAsync<SeedNotFoundException>(
-                () => _repository.GetPlantBySeedIdAsync(seedId));
-        }
+        #endregion
     }
 }

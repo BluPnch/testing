@@ -49,7 +49,7 @@ namespace UnitTests.TestServices
         [Fact]
         [AllureName("Create administrator - should create administrator and auth user when valid data")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.critical)]
+        [AllureSeverity(SeverityLevel.Critical)]
         public async Task CreateAdministratorAsync_ShouldCreateAdministratorAndAuthUser_WhenValidData()
         {
             await AllureApi.Step("Setup test data", () => {
@@ -257,7 +257,7 @@ namespace UnitTests.TestServices
         [Fact]
         [AllureName("Get administrator by ID - should return administrator when exists")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.critical)]
+        [AllureSeverity(SeverityLevel.Critical)]
         public async Task GetAdministratorByIdAsync_ShouldReturnAdministrator_WhenExists()
         {
             var adminId = Guid.NewGuid();

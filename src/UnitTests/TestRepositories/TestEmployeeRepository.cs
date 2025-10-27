@@ -48,7 +48,7 @@ namespace UnitTests.TestRepositories
         [Fact]
         [AllureName("Create employee - should add employee to database")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.critical)]
+        [AllureSeverity(SeverityLevel.Critical)]
         public async Task CreateEmployeeAsync_ShouldAddEmployeeToDatabase()
         {
             await AllureApi.Step("Setup administrator", async () => {
@@ -169,7 +169,7 @@ namespace UnitTests.TestRepositories
         [Fact]
         [AllureName("Get employee by ID - should return employee when exists")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.critical)]
+        [AllureSeverity(SeverityLevel.Critical)]
         public async Task GetEmployeeByIdAsync_ShouldReturnEmployee_WhenExists()
         {
             var administrator = EmployeeMotherObject.CreateDefaultAdministratorDb();
@@ -307,7 +307,7 @@ namespace UnitTests.TestRepositories
         [Fact]
         [AllureName("Get employee by phone number - should return employee when exists")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.critical)]
+        [AllureSeverity(SeverityLevel.Critical)]
         public async Task GetEmployeeByPhoneNumberAsync_ShouldReturnEmployee_WhenExists()
         {
             var phoneNumber = "1234567890";

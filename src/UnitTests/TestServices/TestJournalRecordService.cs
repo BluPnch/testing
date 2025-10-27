@@ -202,7 +202,7 @@ namespace UnitTests.TestServices
         [Fact]
         [AllureName("Create journal record - should create journal record when valid data")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.critical)]
+        [AllureSeverity(SeverityLevel.Critical)]
         public async Task CreateJournalRecordAsync_ShouldCreateJournalRecord_WhenValidData()
         {
             await AllureApi.Step("Setup valid journal record and plant data", () => {
@@ -311,7 +311,7 @@ namespace UnitTests.TestServices
         [Fact]
         [AllureName("Update journal record - should update journal record when valid data")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.critical)]
+        [AllureSeverity(SeverityLevel.Critical)]
         public async Task UpdateJournalRecordAsync_ShouldUpdateJournalRecord_WhenValidData()
         {
             await AllureApi.Step("Setup valid journal record for update", () => {
@@ -375,7 +375,7 @@ namespace UnitTests.TestServices
         [Fact]
         [AllureName("Get journal record by ID - should return journal record when exists")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.critical)]
+        [AllureSeverity(SeverityLevel.Critical)]
         public async Task GetJournalRecordByIdAsync_ShouldReturnJournalRecord_WhenExists()
         {
             var recordId = Guid.NewGuid();

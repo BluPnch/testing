@@ -49,7 +49,7 @@ namespace UnitTests.TestServices
         [Fact]
         [AllureName("Create client - should create client when valid data")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.critical)]
+        [AllureSeverity(SeverityLevel.Critical)]
         public async Task CreateClientAsync_ShouldCreateClient_WhenValidData()
         {
             await AllureApi.Step("Setup valid client data", () => {
@@ -172,7 +172,7 @@ namespace UnitTests.TestServices
         [Fact]
         [AllureName("Get client by ID - should return client when exists")]
         [AllureOwner("Development Team")]
-        [AllureSeverity(SeverityLevel.critical)]
+        [AllureSeverity(SeverityLevel.Critical)]
         public async Task GetClientByIdAsync_ShouldReturnClient_WhenExists()
         {
             var clientId = Guid.NewGuid();
