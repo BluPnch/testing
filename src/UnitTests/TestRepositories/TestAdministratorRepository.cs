@@ -113,7 +113,6 @@ namespace UnitTests.TestRepositories
         [Fact]
         public async Task GetAdministratorByPhoneNumberAsync_ShouldReturnAdministrator_WhenExists()
         {
-            
             var phoneNumber = "1234567890";
             var administrator = AdministratorObjectMother.CreateAdministratorDbWithPhone(phoneNumber);
             
