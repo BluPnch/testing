@@ -10,38 +10,45 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 using System.IO;
+using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace E2ETests
 {
-    public class AdminRealE2ETests : IDisposable
+    public class AdminRealE2ETests : IClassFixture<WebApplicationFactory<Program>>, IDisposable
     {
         private readonly HttpClient _client;
+        private readonly WebApplicationFactory<Program> _factory;
         private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
 
-        private const string BaseUrl = "http://localhost:5097";
+        // Конфигурация для тестов
         private const string AdminEmail = "admin@gh.com";
         private const string AdminPassword = "admin123";
         private const string TestClientName = "Test Client E2E";
         private const string TestClientEmail = "testclient-e2e@example.com";
 
-        public AdminRealE2ETests()
+        public AdminRealE2ETests(WebApplicationFactory<Program> factory)
         {
-            _client = new HttpClient
+            _factory = factory;
+            _client = _factory.CreateClient(new WebApplicationFactoryClientOptions
             {
-                BaseAddress = new Uri(BaseUrl),
-                Timeout = TimeSpan.FromSeconds(60)
-            };
+                BaseAddress = new Uri("http://localhost"),
+                HandleCookies = true,
+                AllowAutoRedirect = true
+            });
             
             _client.DefaultRequestHeaders.Accept.Clear();
             _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             _client.DefaultRequestHeaders.Add("User-Agent", "E2E-Test-Suite/1.0");
+            
+            // Увеличиваем таймаут для CI
+            _client.Timeout = TimeSpan.FromSeconds(120);
         }
 
-        [Fact(Timeout = 60000)]
+        [Fact(Timeout = 120000)]
         public async Task Administrator_Assigns_Client_As_Employee_Should_Succeed()
         {
             string authToken = string.Empty;
@@ -50,15 +57,15 @@ namespace E2ETests
 
             try
             {
-                // === PHASE 1: СОЗДАНИЕ КЛИЕНТА ===
-                await LogTestStep("1. Создание нового клиента");
-                createdClientId = await CreateNewClient();
-                createdClientId.Should().NotBeNullOrEmpty("ID созданного клиента не должен быть пустым");
-
-                // === PHASE 2: АУТЕНТИФИКАЦИЯ АДМИНИСТРАТОРА ===
-                await LogTestStep("2. Аутентификация администратора");
+                // === PHASE 1: АУТЕНТИФИКАЦИЯ АДМИНИСТРАТОРА ===
+                await LogTestStep("1. Аутентификация администратора");
                 authToken = await AuthenticateAsAdmin();
                 authToken.Should().NotBeNullOrEmpty("Токен аутентификации должен быть получен");
+
+                // === PHASE 2: СОЗДАНИЕ КЛИЕНТА ===
+                await LogTestStep("2. Создание нового клиента");
+                createdClientId = await CreateNewClient();
+                createdClientId.Should().NotBeNullOrEmpty("ID созданного клиента не должен быть пустым");
 
                 // === PHASE 3: ПРОСМОТР КЛИЕНТОВ ===
                 await LogTestStep("3. Просмотр списка всех клиентов");
@@ -114,32 +121,6 @@ namespace E2ETests
             }
         }
 
-        private async Task<string> CreateNewClient()
-        {
-            var clientRequest = new
-            {
-                name = TestClientName,
-                phone = "+1234567890",
-                email = TestClientEmail
-            };
-            
-            var payload = JsonSerializer.Serialize(clientRequest, JsonOptions);
-            using var content = new StringContent(payload, Encoding.UTF8, "application/json");
-            
-            var response = await _client.PostAsync("/api/v1/clients", content);
-            
-            if (response.StatusCode != HttpStatusCode.Created)
-            {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                throw new Exception($"Create client failed: {response.StatusCode} - {errorContent}");
-            }
-            
-            var responseContent = await response.Content.ReadAsStringAsync();
-            var result = JsonSerializer.Deserialize<ClientItem>(responseContent, JsonOptions);
-            
-            return result.Id;
-        }
-
         private async Task<string> AuthenticateAsAdmin()
         {
             var loginRequest = new 
@@ -166,6 +147,32 @@ namespace E2ETests
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result.Token);
             
             return result.Token;
+        }
+
+        private async Task<string> CreateNewClient()
+        {
+            var clientRequest = new
+            {
+                name = TestClientName,
+                phone = "+1234567890",
+                email = TestClientEmail
+            };
+            
+            var payload = JsonSerializer.Serialize(clientRequest, JsonOptions);
+            using var content = new StringContent(payload, Encoding.UTF8, "application/json");
+            
+            var response = await _client.PostAsync("/api/v1/clients", content);
+            
+            if (response.StatusCode != HttpStatusCode.Created)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                throw new Exception($"Create client failed: {response.StatusCode} - {errorContent}");
+            }
+            
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var result = JsonSerializer.Deserialize<ClientItem>(responseContent, JsonOptions);
+            
+            return result.Id;
         }
 
         private async Task<List<ClientItem>> GetClientsList()
@@ -293,6 +300,7 @@ namespace E2ETests
         public void Dispose()
         {
             _client?.Dispose();
+            _factory?.Dispose();
         }
     }
 
