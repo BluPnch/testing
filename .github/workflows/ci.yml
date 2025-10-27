@@ -268,29 +268,26 @@ jobs:
         run: |
           cd src
           echo "=== Building API project ==="
-          dotnet build Greenhouse/Greenhouse.csproj --verbosity normal
-
+          dotnet build Server/Server.csproj --verbosity normal
+          
           echo "=== Starting API server in background ==="
-          nohup dotnet run --project Greenhouse/Greenhouse.csproj --urls="https://localhost:7001;http://localhost:5001" > ../api-server.log 2>&1 &
+          nohup dotnet run --project Server/Server.csproj --urls="http://localhost:5097" > ../api-server.log 2>&1 &
           echo $! > ../api-server.pid
-
+          
           echo "=== Waiting for API to start ==="
           sleep 15
-
+          
           echo "=== Checking if API is running ==="
-          curl -f http://localhost:5001/health || curl -f https://localhost:7001/health || echo "Health endpoint not available, continuing..."
-
+          curl -f http://localhost:5097/swagger/v1/swagger.json || echo "API might not be fully ready"
+          
           echo "=== API Server logs ==="
           cat ../api-server.log || echo "No server logs yet"
 
       - name: Wait for API to be ready
         run: |
           echo "=== Waiting for API to be ready ==="
-          timeout 60s bash -c 'until curl -f http://localhost:5001/api/v1/auth/health > /dev/null 2>&1 || curl -f https://localhost:7001/api/v1/auth/health > /dev/null 2>&1; do sleep 3; echo "Waiting for API..."; done' || echo "API health check timeout, continuing..."
-
-          echo "=== Final API check ==="
-          curl -v http://localhost:5001 2>/dev/null || curl -v https://localhost:7001 2>/dev/null || echo "API might not be fully ready"
-
+          timeout 60s bash -c 'until curl -f http://localhost:5097/swagger/v1/swagger.json > /dev/null 2>&1; do sleep 3; echo "Waiting for API..."; done' || echo "API health check timeout, continuing..."
+      
       - name: Run E2E tests with Allure
         run: |
           cd src
