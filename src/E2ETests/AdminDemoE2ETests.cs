@@ -69,10 +69,10 @@ namespace E2ETests
                 
                 // Берем первого клиента из списка
                 var existingClient = allClients.First();
-                existingClientId = existingClient.Id;
+                existingClientId = existingClient.Id.ToString();
                 existingClientId.Should().NotBeNullOrEmpty("ID существующего клиента не должен быть пустым");
 
-                await LogTestStep($"3. Используем клиента: {existingClient.Name} (ID: {existingClientId})");
+                await LogTestStep($"3. Используем клиента: {existingClient.CompanyName} (ID: {existingClientId})");
 
                 // === PHASE 3: НАЗНАЧЕНИЕ КЛИЕНТА СОТРУДНИКОМ ===
                 await LogTestStep("4. Назначение клиента на роль сотрудника");
@@ -82,7 +82,7 @@ namespace E2ETests
                 // === PHASE 4: ПРОВЕРКА РЕЗУЛЬТАТА ===
                 await LogTestStep("5. Проверка, что клиент стал сотрудником");
                 var employees = await GetEmployeesList();
-                employees.Should().Contain(e => e.Id == assignedEmployeeId,
+                employees.Should().Contain(e => e.Id.ToString() == assignedEmployeeId,
                     "Назначенный сотрудник должен отображаться в списке сотрудников");
 
                 var employeeDetails = await GetEmployeeDetails(assignedEmployeeId);
@@ -153,9 +153,9 @@ namespace E2ETests
             }
             
             var content = await response.Content.ReadAsStringAsync();
-            var result = JsonSerializer.Deserialize<ClientsListResponse>(content, JsonOptions);
+            var result = JsonSerializer.Deserialize<List<ClientItem>>(content, JsonOptions);
             
-            return result?.Items ?? new List<ClientItem>();
+            return result ?? new List<ClientItem>();
         }
 
         private async Task<string> AssignClientAsEmployee(string clientId)
@@ -166,10 +166,10 @@ namespace E2ETests
             // Создаем сотрудника на основе данных клиента
             var employeeRequest = new
             {
-                firstName = clientDetails.Name, // Используем имя клиента как firstName
+                firstName = clientDetails.CompanyName, // Используем название компании как firstName
                 lastName = "Assigned", // Добавляем фамилию
-                email = $"employee-{clientDetails.Id}@test.com", // Генерируем уникальный email
-                phone = clientDetails.Phone ?? "+1234567890",
+                email = $"employee-{clientId}@test.com", // Генерируем уникальный email
+                phone = clientDetails.PhoneNumber ?? "+1234567890",
                 position = "Assigned from Client",
                 clientId = clientId, // Привязываем к клиенту
                 hireDate = DateTime.UtcNow.ToString("yyyy-MM-dd")
@@ -189,7 +189,7 @@ namespace E2ETests
             var responseContent = await response.Content.ReadAsStringAsync();
             var result = JsonSerializer.Deserialize<EmployeeItem>(responseContent, JsonOptions);
             
-            return result.Id;
+            return result.Id.ToString();
         }
 
         private async Task<ClientItem> GetClientDetails(string clientId)
@@ -217,9 +217,9 @@ namespace E2ETests
             }
             
             var content = await response.Content.ReadAsStringAsync();
-            var result = JsonSerializer.Deserialize<EmployeesListResponse>(content, JsonOptions);
+            var result = JsonSerializer.Deserialize<List<EmployeeItem>>(content, JsonOptions);
             
-            return result?.Items ?? new List<EmployeeItem>();
+            return result ?? new List<EmployeeItem>();
         }
 
         private async Task<EmployeeItem> GetEmployeeDetails(string employeeId)
@@ -274,33 +274,16 @@ namespace E2ETests
         public DateTime ExpiresAt { get; set; }
     }
 
-    public class ClientsListResponse
-    {
-        public List<ClientItem> Items { get; set; } = new();
-        public int TotalCount { get; set; }
-        public int Page { get; set; }
-        public int PageSize { get; set; }
-    }
-
     public class ClientItem
     {
-        public string Id { get; set; } = string.Empty;
-        public string Name { get; set; } = string.Empty;
-        public string Phone { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-    }
-
-    public class EmployeesListResponse
-    {
-        public List<EmployeeItem> Items { get; set; } = new();
-        public int TotalCount { get; set; }
-        public int Page { get; set; }
-        public int PageSize { get; set; }
+        public Guid Id { get; set; }
+        public string CompanyName { get; set; } = string.Empty;
+        public string PhoneNumber { get; set; } = string.Empty;
     }
 
     public class EmployeeItem
     {
-        public string Id { get; set; } = string.Empty;
+        public Guid Id { get; set; }
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
