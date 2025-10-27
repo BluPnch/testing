@@ -11,6 +11,8 @@ using System.Linq;
 using System;
 using System.IO;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Server;
+
 
 namespace E2ETests
 {
