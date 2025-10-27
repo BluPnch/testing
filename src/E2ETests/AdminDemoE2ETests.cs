@@ -1,6 +1,3 @@
-Варя Вавилова, [28.10.2025 0:48]
-// Создается новый клиент → пользователь логинится (входит в систему) за администратора → администратор просматривает всех клиентов → назначает клиента из таблицы клиентов на роль сотрудника
-
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -25,7 +22,6 @@ namespace E2ETests
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
 
-        // Реальная конфигурация из вашего DbInitializer
         private const string BaseUrl = "http://localhost:5097";
         private const string AdminEmail = "admin@gh.com";
         private const string AdminPassword = "admin123";
@@ -87,9 +83,7 @@ namespace E2ETests
                 employeeDetails.Email.Should().Be(TestClientEmail, "Email сотрудника должен совпадать с email клиента");
 
                 await LogTestStep("✅ СЦЕНАРИЙ УСПЕШНО ЗАВЕРШЕН: Клиент назначен сотрудником");
-
-Варя Вавилова, [28.10.2025 0:48]
-}
+            }
             catch (Exception ex)
             {
                 await LogTestStep($"❌ ТЕСТ ПРЕРВАН С ОШИБКОЙ: {ex.Message}");
@@ -190,8 +184,7 @@ namespace E2ETests
             return result?.Items ?? new List<ClientItem>();
         }
 
-Варя Вавилова, [28.10.2025 0:48]
-private async Task<string> AssignClientAsEmployee(string clientId)
+        private async Task<string> AssignClientAsEmployee(string clientId)
         {
             // Получаем детали клиента
             var clientDetails = await GetClientDetails(clientId);
@@ -269,17 +262,16 @@ private async Task<string> AssignClientAsEmployee(string clientId)
             return JsonSerializer.Deserialize<EmployeeItem>(content, JsonOptions);
         }
 
-Варя Вавилова, [28.10.2025 0:48]
-private async Task<bool> DeleteEmployee(string employeeId)
+        private async Task<bool> DeleteEmployee(string employeeId)
         {
             var response = await _client.DeleteAsync($"/api/v1/employees/{employeeId}");
-            return response.StatusCode == HttpStatusCode.OK  response.StatusCode == HttpStatusCode.NoContent;
+            return response.StatusCode == HttpStatusCode.OK || response.StatusCode == HttpStatusCode.NoContent;
         }
 
         private async Task<bool> DeleteClient(string clientId)
         {
             var response = await _client.DeleteAsync($"/api/v1/clients/{clientId}");
-            return response.StatusCode == HttpStatusCode.OK  response.StatusCode == HttpStatusCode.NoContent;
+            return response.StatusCode == HttpStatusCode.OK || response.StatusCode == HttpStatusCode.NoContent;
         }
 
         private async Task LogTestStep(string message)
