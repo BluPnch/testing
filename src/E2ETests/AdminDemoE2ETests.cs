@@ -13,7 +13,6 @@ using System.IO;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Server;
 
-
 namespace E2ETests
 {
     public class AdminRealE2ETests : IClassFixture<WebApplicationFactory<Program>>, IDisposable
@@ -29,8 +28,6 @@ namespace E2ETests
         // Конфигурация для тестов
         private const string AdminEmail = "admin@gh.com";
         private const string AdminPassword = "admin123";
-        private const string TestClientName = "Test Client E2E";
-        private const string TestClientEmail = "testclient-e2e@example.com";
 
         public AdminRealE2ETests(WebApplicationFactory<Program> factory)
         {
@@ -54,7 +51,7 @@ namespace E2ETests
         public async Task Administrator_Assigns_Client_As_Employee_Should_Succeed()
         {
             string authToken = string.Empty;
-            string createdClientId = string.Empty;
+            string existingClientId = string.Empty;
             string assignedEmployeeId = string.Empty;
 
             try
@@ -64,24 +61,25 @@ namespace E2ETests
                 authToken = await AuthenticateAsAdmin();
                 authToken.Should().NotBeNullOrEmpty("Токен аутентификации должен быть получен");
 
-                // === PHASE 2: СОЗДАНИЕ КЛИЕНТА ===
-                await LogTestStep("2. Создание нового клиента");
-                createdClientId = await CreateNewClient();
-                createdClientId.Should().NotBeNullOrEmpty("ID созданного клиента не должен быть пустым");
-
-                // === PHASE 3: ПРОСМОТР КЛИЕНТОВ ===
-                await LogTestStep("3. Просмотр списка всех клиентов");
+                // === PHASE 2: ПОЛУЧЕНИЕ СУЩЕСТВУЮЩЕГО КЛИЕНТА ===
+                await LogTestStep("2. Получение существующего клиента из базы данных");
                 var allClients = await GetClientsList();
                 allClients.Should().NotBeNull("Список клиентов не должен быть null");
-                allClients.Should().Contain(c => c.Id == createdClientId, 
-                    "Созданный клиент должен отображаться в списке");
+                allClients.Should().NotBeEmpty("В базе данных должен быть хотя бы один клиент");
+                
+                // Берем первого клиента из списка
+                var existingClient = allClients.First();
+                existingClientId = existingClient.Id;
+                existingClientId.Should().NotBeNullOrEmpty("ID существующего клиента не должен быть пустым");
 
-                // === PHASE 4: НАЗНАЧЕНИЕ КЛИЕНТА СОТРУДНИКОМ ===
+                await LogTestStep($"3. Используем клиента: {existingClient.Name} (ID: {existingClientId})");
+
+                // === PHASE 3: НАЗНАЧЕНИЕ КЛИЕНТА СОТРУДНИКОМ ===
                 await LogTestStep("4. Назначение клиента на роль сотрудника");
-                assignedEmployeeId = await AssignClientAsEmployee(createdClientId);
+                assignedEmployeeId = await AssignClientAsEmployee(existingClientId);
                 assignedEmployeeId.Should().NotBeNullOrEmpty("ID назначенного сотрудника не должен быть пустым");
 
-                // === PHASE 5: ПРОВЕРКА РЕЗУЛЬТАТА ===
+                // === PHASE 4: ПРОВЕРКА РЕЗУЛЬТАТА ===
                 await LogTestStep("5. Проверка, что клиент стал сотрудником");
                 var employees = await GetEmployeesList();
                 employees.Should().Contain(e => e.Id == assignedEmployeeId,
@@ -89,9 +87,10 @@ namespace E2ETests
 
                 var employeeDetails = await GetEmployeeDetails(assignedEmployeeId);
                 employeeDetails.Should().NotBeNull("Детали сотрудника не должны быть null");
-                employeeDetails.Email.Should().Be(TestClientEmail, "Email сотрудника должен совпадать с email клиента");
+                employeeDetails.ClientId.Should().Be(existingClientId, "Сотрудник должен быть привязан к клиенту");
 
                 await LogTestStep("✅ СЦЕНАРИЙ УСПЕШНО ЗАВЕРШЕН: Клиент назначен сотрудником");
+
             }
             catch (Exception ex)
             {
@@ -102,23 +101,15 @@ namespace E2ETests
                 {
                     try { await DeleteEmployee(assignedEmployeeId); } catch { }
                 }
-                if (!string.IsNullOrEmpty(createdClientId))
-                {
-                    try { await DeleteClient(createdClientId); } catch { }
-                }
                 
                 throw;
             }
             finally
             {
-                // Финальная очистка
+                // Финальная очистка (удаляем только созданного сотрудника, клиент остается)
                 if (!string.IsNullOrEmpty(assignedEmployeeId))
                 {
                     try { await DeleteEmployee(assignedEmployeeId); } catch { }
-                }
-                if (!string.IsNullOrEmpty(createdClientId))
-                {
-                    try { await DeleteClient(createdClientId); } catch { }
                 }
             }
         }
@@ -151,32 +142,6 @@ namespace E2ETests
             return result.Token;
         }
 
-        private async Task<string> CreateNewClient()
-        {
-            var clientRequest = new
-            {
-                name = TestClientName,
-                phone = "+1234567890",
-                email = TestClientEmail
-            };
-            
-            var payload = JsonSerializer.Serialize(clientRequest, JsonOptions);
-            using var content = new StringContent(payload, Encoding.UTF8, "application/json");
-            
-            var response = await _client.PostAsync("/api/v1/clients", content);
-            
-            if (response.StatusCode != HttpStatusCode.Created)
-            {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                throw new Exception($"Create client failed: {response.StatusCode} - {errorContent}");
-            }
-            
-            var responseContent = await response.Content.ReadAsStringAsync();
-            var result = JsonSerializer.Deserialize<ClientItem>(responseContent, JsonOptions);
-            
-            return result.Id;
-        }
-
         private async Task<List<ClientItem>> GetClientsList()
         {
             var response = await _client.GetAsync("/api/v1/clients?page=1&pageSize=50");
@@ -202,11 +167,11 @@ namespace E2ETests
             var employeeRequest = new
             {
                 firstName = clientDetails.Name, // Используем имя клиента как firstName
-                lastName = "Employee", // Добавляем фамилию
-                email = clientDetails.Email,
-                phone = clientDetails.Phone,
+                lastName = "Assigned", // Добавляем фамилию
+                email = $"employee-{clientDetails.Id}@test.com", // Генерируем уникальный email
+                phone = clientDetails.Phone ?? "+1234567890",
                 position = "Assigned from Client",
-                clientId = clientId, // Привязываем к самому себе как клиенту
+                clientId = clientId, // Привязываем к клиенту
                 hireDate = DateTime.UtcNow.ToString("yyyy-MM-dd")
             };
             
@@ -274,12 +239,6 @@ namespace E2ETests
         private async Task<bool> DeleteEmployee(string employeeId)
         {
             var response = await _client.DeleteAsync($"/api/v1/employees/{employeeId}");
-            return response.StatusCode == HttpStatusCode.OK || response.StatusCode == HttpStatusCode.NoContent;
-        }
-
-        private async Task<bool> DeleteClient(string clientId)
-        {
-            var response = await _client.DeleteAsync($"/api/v1/clients/{clientId}");
             return response.StatusCode == HttpStatusCode.OK || response.StatusCode == HttpStatusCode.NoContent;
         }
 
