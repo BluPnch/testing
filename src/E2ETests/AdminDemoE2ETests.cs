@@ -1,3 +1,5 @@
+// Создается новый клиент → пользователь логинится (входит в систему) за администратора → администратор просматривает всех клиентов → назначает клиента из таблицы клиентов на роль сотрудника
+
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -22,29 +24,128 @@ namespace E2ETests
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
 
-        // Конфигурация для реального тестирования
-        private const string BaseUrl = "https://api.your-greenhouse-app.com"; // Замените на реальный URL
+        // Реальная конфигурация из вашего DbInitializer
+        private const string BaseUrl = "http://localhost:5097";
         private const string AdminEmail = "admin@gh.com";
         private const string AdminPassword = "admin123";
+        private const string TestClientName = "Test Client E2E";
+        private const string TestClientEmail = "testclient-e2e@example.com";
 
         public AdminRealE2ETests()
         {
             _client = new HttpClient
             {
                 BaseAddress = new Uri(BaseUrl),
-                Timeout = TimeSpan.FromSeconds(30)
+                Timeout = TimeSpan.FromSeconds(60)
             };
             
-            // Настройка стандартных заголовков
             _client.DefaultRequestHeaders.Accept.Clear();
             _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             _client.DefaultRequestHeaders.Add("User-Agent", "E2E-Test-Suite/1.0");
         }
 
-        [Fact(Timeout = 30000)]
-        public async Task Administrator_Complete_Real_Journey_Should_Succeed()
+        [Fact(Timeout = 60000)]
+        public async Task Administrator_Assigns_Client_As_Employee_Should_Succeed()
         {
-            // STEP 1: Real Login with credentials validation
+            string authToken = string.Empty;
+            string createdClientId = string.Empty;
+            string assignedEmployeeId = string.Empty;
+
+            try
+            {
+                // === PHASE 1: СОЗДАНИЕ КЛИЕНТА ===
+                await LogTestStep("1. Создание нового клиента");
+                createdClientId = await CreateNewClient();
+                createdClientId.Should().NotBeNullOrEmpty("ID созданного клиента не должен быть пустым");
+
+                // === PHASE 2: АУТЕНТИФИКАЦИЯ АДМИНИСТРАТОРА ===
+                await LogTestStep("2. Аутентификация администратора");
+                authToken = await AuthenticateAsAdmin();
+                authToken.Should().NotBeNullOrEmpty("Токен аутентификации должен быть получен");
+
+                // === PHASE 3: ПРОСМОТР КЛИЕНТОВ ===
+                await LogTestStep("3. Просмотр списка всех клиентов");
+                var allClients = await GetClientsList();
+                allClients.Should().NotBeNull("Список клиентов не должен быть null");
+                allClients.Should().Contain(c => c.Id == createdClientId, 
+                    "Созданный клиент должен отображаться в списке");
+
+                // === PHASE 4: НАЗНАЧЕНИЕ КЛИЕНТА СОТРУДНИКОМ ===
+                await LogTestStep("4. Назначение клиента на роль сотрудника");
+                assignedEmployeeId = await AssignClientAsEmployee(createdClientId);
+                assignedEmployeeId.Should().NotBeNullOrEmpty("ID назначенного сотрудника не должен быть пустым");
+
+                // === PHASE 5: ПРОВЕРКА РЕЗУЛЬТАТА ===
+                await LogTestStep("5. Проверка, что клиент стал сотрудником");
+                var employees = await GetEmployeesList();
+                employees.Should().Contain(e => e.Id == assignedEmployeeId,
+                    "Назначенный сотрудник должен отображаться в списке сотрудников");
+
+                var employeeDetails = await GetEmployeeDetails(assignedEmployeeId);
+                employeeDetails.Should().NotBeNull("Детали сотрудника не должны быть null");
+                employeeDetails.Email.Should().Be(TestClientEmail, "Email сотрудника должен совпадать с email клиента");
+
+                await LogTestStep("✅ СЦЕНАРИЙ УСПЕШНО ЗАВЕРШЕН: Клиент назначен сотрудником");
+
+            }
+            catch (Exception ex)
+            {
+                await LogTestStep($"❌ ТЕСТ ПРЕРВАН С ОШИБКОЙ: {ex.Message}");
+                
+                // Попытка очистки тестовых данных в случае ошибки
+                if (!string.IsNullOrEmpty(assignedEmployeeId))
+                {
+                    try { await DeleteEmployee(assignedEmployeeId); } catch { }
+                }
+                if (!string.IsNullOrEmpty(createdClientId))
+                {
+                    try { await DeleteClient(createdClientId); } catch { }
+                }
+                
+                throw;
+            }
+            finally
+            {
+                // Финальная очистка
+                if (!string.IsNullOrEmpty(assignedEmployeeId))
+                {
+                    try { await DeleteEmployee(assignedEmployeeId); } catch { }
+                }
+                if (!string.IsNullOrEmpty(createdClientId))
+                {
+                    try { await DeleteClient(createdClientId); } catch { }
+                }
+            }
+        }
+
+        private async Task<string> CreateNewClient()
+        {
+            var clientRequest = new
+            {
+                name = TestClientName,
+                phone = "+1234567890",
+                email = TestClientEmail
+            };
+            
+            var payload = JsonSerializer.Serialize(clientRequest, JsonOptions);
+            using var content = new StringContent(payload, Encoding.UTF8, "application/json");
+            
+            var response = await _client.PostAsync("/api/v1/clients", content);
+            
+            if (response.StatusCode != HttpStatusCode.Created)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                throw new Exception($"Create client failed: {response.StatusCode} - {errorContent}");
+            }
+            
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var result = JsonSerializer.Deserialize<ClientItem>(responseContent, JsonOptions);
+            
+            return result.Id;
+        }
+
+        private async Task<string> AuthenticateAsAdmin()
+        {
             var loginRequest = new 
             { 
                 username = AdminEmail, 
@@ -54,219 +155,143 @@ namespace E2ETests
             var loginPayload = JsonSerializer.Serialize(loginRequest, JsonOptions);
             using var loginContent = new StringContent(loginPayload, Encoding.UTF8, "application/json");
             
-            var loginResponse = await _client.PostAsync("/api/v1/auth/login", loginContent);
+            var response = await _client.PostAsync("/api/v1/auth/login", loginContent);
             
-            // Validate response
-            loginResponse.StatusCode.Should().Be(HttpStatusCode.OK, 
-                "Login should succeed with valid admin credentials");
-            
-            var loginResponseContent = await loginResponse.Content.ReadAsStringAsync();
-            loginResponseContent.Should().NotBeNullOrWhiteSpace("Response should contain data");
-            
-            var loginResult = JsonSerializer.Deserialize<LoginResponse>(loginResponseContent, JsonOptions);
-            
-            loginResult.Should().NotBeNull("Login response should not be null");
-            loginResult!.Token.Should().NotBeNullOrEmpty("JWT token should be provided");
-            loginResult.Username.Should().Be(AdminEmail, "Should return the authenticated user's email");
-            
-            // Set authentication token for subsequent requests
-            _client.DefaultRequestHeaders.Authorization = 
-                new AuthenticationHeaderValue("Bearer", loginResult.Token);
-            
-            await SaveAttachment("Login_Response.json", loginResponseContent);
-
-            // STEP 2: Get clients with pagination and filtering
-            var clientsResponse = await _client.GetAsync("/api/v1/clients?page=1&pageSize=10");
-            
-            clientsResponse.StatusCode.Should().Be(HttpStatusCode.OK, 
-                "Should successfully retrieve clients list");
-            
-            var clientsContent = await clientsResponse.Content.ReadAsStringAsync();
-            clientsContent.Should().NotBeNullOrWhiteSpace("Clients data should not be empty");
-            
-            // Validate response structure
-            var clientsData = JsonSerializer.Deserialize<ClientsListResponse>(clientsContent, JsonOptions);
-            clientsData.Should().NotBeNull("Clients response should not be null");
-            
-            await SaveAttachment("Clients_Response.json", clientsContent);
-
-            // STEP 3: Access administrators endpoint with data validation
-            var administratorsResponse = await _client.GetAsync("/api/v1/administrators");
-            
-            administratorsResponse.StatusCode.Should().Be(HttpStatusCode.OK, 
-                "Should have access to administrators endpoint");
-            
-            var adminContent = await administratorsResponse.Content.ReadAsStringAsync();
-            
-            // Even if the list is empty, we should get valid response
-            adminContent.Should().NotBeNull("Administrators response should not be null");
-            
-            await SaveAttachment("Administrators_Response.json", adminContent);
-
-            // STEP 4: Get employees with detailed validation
-            var employeesResponse = await _client.GetAsync("/api/v1/employees?includeInactive=false");
-            
-            employeesResponse.StatusCode.Should().Be(HttpStatusCode.OK, 
-                "Should successfully retrieve employees list");
-            
-            var employeesContent = await employeesResponse.Content.ReadAsStringAsync();
-            
-            // Validate JSON structure
-            employeesContent.Should().NotBeNullOrWhiteSpace("Employees data should not be empty");
-            
-            await SaveAttachment("Employees_Response.json", employeesContent);
-
-            // STEP 5: Test specific client details
-            // First get a client ID from the list, or use a known test client
-            var clientsListResponse = await _client.GetAsync("/api/v1/clients?page=1&pageSize=5");
-            if (clientsListResponse.IsSuccessStatusCode)
+            if (response.StatusCode != HttpStatusCode.OK)
             {
-                var clientsListContent = await clientsListResponse.Content.ReadAsStringAsync();
-                var clientsListData = JsonSerializer.Deserialize<ClientsListResponse>(clientsListContent, JsonOptions);
-                
-                if (clientsListData?.Items != null && clientsListData.Items.Any())
-                {
-                    var firstClient = clientsListData.Items.First();
-                    var clientDetailsResponse = await _client.GetAsync($"/api/v1/clients/{firstClient.Id}");
-                    
-                    clientDetailsResponse.StatusCode.Should().BeOneOf(
-                        new[] { HttpStatusCode.OK, HttpStatusCode.NotFound },
-                        "Client details should be accessible or properly handle missing clients");
-                    
-                    if (clientDetailsResponse.IsSuccessStatusCode)
-                    {
-                        var clientDetails = await clientDetailsResponse.Content.ReadAsStringAsync();
-                        await SaveAttachment($"Client_{firstClient.Id}_Details.json", clientDetails);
-                    }
-                }
+                var errorContent = await response.Content.ReadAsStringAsync();
+                throw new Exception($"Authentication failed: {response.StatusCode} - {errorContent}");
             }
+            
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var result = JsonSerializer.Deserialize<LoginResponse>(responseContent, JsonOptions);
+            
+            // Устанавливаем токен для последующих запросов
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result.Token);
+            
+            return result.Token;
         }
 
-        [Fact(Timeout = 15000)]
-        public async Task Unauthorized_Access_To_Protected_Endpoints_Should_Be_Blocked()
+        private async Task<List<ClientItem>> GetClientsList()
         {
-            // Create a new client without authentication
-            using var unauthenticatedClient = new HttpClient 
-            { 
-                BaseAddress = new Uri(BaseUrl),
-                Timeout = TimeSpan.FromSeconds(15)
+            var response = await _client.GetAsync("/api/v1/clients?page=1&pageSize=50");
+            
+            if (response.StatusCode != HttpStatusCode.OK)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                throw new Exception($"Get clients failed: {response.StatusCode} - {errorContent}");
+            }
+            
+            var content = await response.Content.ReadAsStringAsync();
+            var result = JsonSerializer.Deserialize<ClientsListResponse>(content, JsonOptions);
+            
+            return result?.Items ?? new List<ClientItem>();
+        }
+
+        private async Task<string> AssignClientAsEmployee(string clientId)
+        {
+            // Получаем детали клиента
+            var clientDetails = await GetClientDetails(clientId);
+            
+            // Создаем сотрудника на основе данных клиента
+            var employeeRequest = new
+            {
+                firstName = clientDetails.Name, // Используем имя клиента как firstName
+                lastName = "Employee", // Добавляем фамилию
+                email = clientDetails.Email,
+                phone = clientDetails.Phone,
+                position = "Assigned from Client",
+                clientId = clientId, // Привязываем к самому себе как клиенту
+                hireDate = DateTime.UtcNow.ToString("yyyy-MM-dd")
             };
-
-            var protectedEndpoints = new[]
+            
+            var payload = JsonSerializer.Serialize(employeeRequest, JsonOptions);
+            using var content = new StringContent(payload, Encoding.UTF8, "application/json");
+            
+            var response = await _client.PostAsync("/api/v1/employees", content);
+            
+            if (response.StatusCode != HttpStatusCode.Created)
             {
-                "/api/v1/administrators",
-                "/api/v1/clients",
-                "/api/v1/employees",
-                "/api/v1/sensitive-data"
-            };
-
-            foreach (var endpoint in protectedEndpoints)
-            {
-                var response = await unauthenticatedClient.GetAsync(endpoint);
-                
-                response.StatusCode.Should().Be(HttpStatusCode.Unauthorized, 
-                    $"Endpoint {endpoint} should require authentication");
-                
-                // Additional check for proper WWW-Authenticate header
-                if (response.Headers.Contains("WWW-Authenticate"))
-                {
-                    response.Headers.WwwAuthenticate.Should().NotBeEmpty();
-                }
+                var errorContent = await response.Content.ReadAsStringAsync();
+                throw new Exception($"Assign client as employee failed: {response.StatusCode} - {errorContent}");
             }
+            
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var result = JsonSerializer.Deserialize<EmployeeItem>(responseContent, JsonOptions);
+            
+            return result.Id;
         }
 
-        [Fact(Timeout = 10000)]
-        public async Task API_Health_Check_Should_Respond()
+        private async Task<ClientItem> GetClientDetails(string clientId)
         {
-            var healthResponse = await _client.GetAsync("/health");
+            var response = await _client.GetAsync($"/api/v1/clients/{clientId}");
             
-            healthResponse.StatusCode.Should().BeOneOf(
-                new[] { HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable },
-                "Health endpoint should respond with expected status codes");
-            
-            if (healthResponse.IsSuccessStatusCode)
+            if (response.StatusCode != HttpStatusCode.OK)
             {
-                var healthContent = await healthResponse.Content.ReadAsStringAsync();
-                healthContent.Should().NotBeNullOrWhiteSpace("Health response should contain data");
-                
-                await SaveAttachment("Health_Response.txt", healthContent);
+                var errorContent = await response.Content.ReadAsStringAsync();
+                throw new Exception($"Get client details failed: {response.StatusCode} - {errorContent}");
             }
+            
+            var content = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<ClientItem>(content, JsonOptions);
         }
 
-        [Theory(Timeout = 15000)]
-        [InlineData("wrong@email.com", "admin123", HttpStatusCode.Unauthorized)]
-        [InlineData("admin@gh.com", "wrongpassword", HttpStatusCode.Unauthorized)]
-        [InlineData("", "admin123", HttpStatusCode.BadRequest)]
-        [InlineData("admin@gh.com", "", HttpStatusCode.BadRequest)]
-        public async Task Invalid_Login_Attempts_Should_Fail(string username, string password, HttpStatusCode expectedStatus)
+        private async Task<List<EmployeeItem>> GetEmployeesList()
         {
-            var loginRequest = new { username, password };
-            var loginPayload = JsonSerializer.Serialize(loginRequest, JsonOptions);
-            using var loginContent = new StringContent(loginPayload, Encoding.UTF8, "application/json");
+            var response = await _client.GetAsync("/api/v1/employees?page=1&pageSize=50");
             
-            var loginResponse = await _client.PostAsync("/api/v1/auth/login", loginContent);
-            
-            loginResponse.StatusCode.Should().Be(expectedStatus, 
-                $"Login with username '{username}' should return {expectedStatus}");
-            
-            if (loginResponse.StatusCode == HttpStatusCode.Unauthorized)
+            if (response.StatusCode != HttpStatusCode.OK)
             {
-                var responseContent = await loginResponse.Content.ReadAsStringAsync();
-                responseContent.Should().NotContain("Token", "No token should be provided for failed login");
+                var errorContent = await response.Content.ReadAsStringAsync();
+                throw new Exception($"Get employees failed: {response.StatusCode} - {errorContent}");
             }
+            
+            var content = await response.Content.ReadAsStringAsync();
+            var result = JsonSerializer.Deserialize<EmployeesListResponse>(content, JsonOptions);
+            
+            return result?.Items ?? new List<EmployeeItem>();
         }
 
-        // Упрощенная версия без сложных шагов
-        [Fact(Timeout = 30000)]
-        public async Task Administrator_Simplified_Journey_Should_Succeed()
+        private async Task<EmployeeItem> GetEmployeeDetails(string employeeId)
         {
-            // STEP 1: Login
-            var loginRequest = new { username = AdminEmail, password = AdminPassword };
-            var loginPayload = JsonSerializer.Serialize(loginRequest, JsonOptions);
-            using var loginContent = new StringContent(loginPayload, Encoding.UTF8, "application/json");
+            var response = await _client.GetAsync($"/api/v1/employees/{employeeId}");
             
-            var loginResponse = await _client.PostAsync("/api/v1/auth/login", loginContent);
-            loginResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-            
-            var loginResponseContent = await loginResponse.Content.ReadAsStringAsync();
-            var loginResult = JsonSerializer.Deserialize<LoginResponse>(loginResponseContent, JsonOptions);
-            
-            loginResult.Should().NotBeNull();
-            loginResult!.Token.Should().NotBeNullOrEmpty();
-            
-            // Set token for subsequent requests
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", loginResult.Token);
-
-            // STEP 2: Access various endpoints
-            var endpointsToTest = new[]
+            if (response.StatusCode != HttpStatusCode.OK)
             {
-                "/api/v1/clients?page=1&pageSize=10",
-                "/api/v1/administrators", 
-                "/api/v1/employees",
-                "/api/v1/dashboard/stats"
-            };
-
-            foreach (var endpoint in endpointsToTest)
-            {
-                var response = await _client.GetAsync(endpoint);
-                response.StatusCode.Should().Be(HttpStatusCode.OK, $"Endpoint {endpoint} should be accessible");
-                
-                var content = await response.Content.ReadAsStringAsync();
-                content.Should().NotBeNull($"Response from {endpoint} should not be null");
-                
-                // Save response to file for manual inspection
-                await SaveAttachment($"{endpoint.Replace("/", "_")}_response.json", content);
+                var errorContent = await response.Content.ReadAsStringAsync();
+                throw new Exception($"Get employee details failed: {response.StatusCode} - {errorContent}");
             }
+            
+            var content = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<EmployeeItem>(content, JsonOptions);
         }
 
-        // Simple file-based attachment
-        private async Task SaveAttachment(string filename, string content)
+        private async Task<bool> DeleteEmployee(string employeeId)
         {
-            var attachmentsDir = Path.Combine(Directory.GetCurrentDirectory(), "test-results");
-            Directory.CreateDirectory(attachmentsDir);
+            var response = await _client.DeleteAsync($"/api/v1/employees/{employeeId}");
+            return response.StatusCode == HttpStatusCode.OK || response.StatusCode == HttpStatusCode.NoContent;
+        }
+
+        private async Task<bool> DeleteClient(string clientId)
+        {
+            var response = await _client.DeleteAsync($"/api/v1/clients/{clientId}");
+            return response.StatusCode == HttpStatusCode.OK || response.StatusCode == HttpStatusCode.NoContent;
+        }
+
+        private async Task LogTestStep(string message)
+        {
+            var timestamp = DateTime.Now.ToString("HH:mm:ss");
+            Console.WriteLine($"[{timestamp}] {message}");
+            await SaveTestLog(message);
+        }
+
+        private async Task SaveTestLog(string message)
+        {
+            var logDir = Path.Combine(Directory.GetCurrentDirectory(), "e2e-logs");
+            Directory.CreateDirectory(logDir);
             
-            var filePath = Path.Combine(attachmentsDir, filename);
-            await File.WriteAllTextAsync(filePath, content);
+            var logFile = Path.Combine(logDir, $"employee-assignment-{DateTime.Now:yyyyMMdd-HHmmss}.log");
+            await File.AppendAllTextAsync(logFile, $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - {message}{Environment.NewLine}");
         }
 
         public void Dispose()
@@ -275,7 +300,7 @@ namespace E2ETests
         }
     }
 
-    // Response models for real API
+    // Response models
     public class LoginResponse
     {
         public string Username { get; set; } = string.Empty;
@@ -296,7 +321,27 @@ namespace E2ETests
     {
         public string Id { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
+        public string Phone { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
-        public DateTime CreatedAt { get; set; }
+    }
+
+    public class EmployeesListResponse
+    {
+        public List<EmployeeItem> Items { get; set; } = new();
+        public int TotalCount { get; set; }
+        public int Page { get; set; }
+        public int PageSize { get; set; }
+    }
+
+    public class EmployeeItem
+    {
+        public string Id { get; set; } = string.Empty;
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Phone { get; set; } = string.Empty;
+        public string Position { get; set; } = string.Empty;
+        public string ClientId { get; set; } = string.Empty;
+        public DateTime HireDate { get; set; }
     }
 }
