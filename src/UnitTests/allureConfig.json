@@ -9,6 +9,9 @@
   "labels": {
     "layer": ["unit"]
   },
+  "behaviors": {
+    "severity": ["normal"]
+  },
   "environment": {
     "test_type": "Unit",
     "framework": "xUnit",

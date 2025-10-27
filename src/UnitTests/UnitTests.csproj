@@ -7,6 +7,9 @@
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
         <NoWarn>NU1603;NU1605;CS8620;CS8625;CS8601;CS8604</NoWarn>
+
+        <!-- Allure Configuration -->
+        <AllureConfig>allureConfig.json</AllureConfig>
     </PropertyGroup>
 
     <ItemGroup>
