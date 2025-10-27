@@ -105,17 +105,25 @@ jobs:
           echo "=== Running unit tests ==="
           dotnet test UnitTests/UnitTests.csproj --logger "trx;LogFileName=unit-tests.trx" --results-directory "../test-results"
 
-      - name: Collect Allure results
+      - name: Run unit tests
         run: |
-          echo "=== Collecting real Allure results ==="
+          cd src
+          echo "=== Running unit tests ==="
+          dotnet test UnitTests/UnitTests.csproj --logger "trx;LogFileName=unit-tests.trx" --results-directory "../test-results"
 
-          if [ -d "allure-results-unit" ]; then
-            echo "Found Allure results in allure-results-unit/"
+      - name: Copy Allure results
+        run: |
+          echo "=== Copying Allure results ==="
+          # Копируем результаты из папки тестов
+          if [ -d "src/UnitTests/bin/Debug/net9.0/allure-results" ]; then
+            echo "Copying real Allure results..."
+            cp -r src/UnitTests/bin/Debug/net9.0/allure-results/* allure-results-unit/
+            echo "Copied files:"
             ls -la allure-results-unit/
           else
-            echo "No Allure results found in allure-results-unit/"
-            echo "Checking test output directories..."
-            find . -name "allure-results" -type d 2>/dev/null | head -5
+            echo "WARNING: No Allure results found!"
+            echo "Checking what's in UnitTests directory:"
+            find src/UnitTests -name "*allure*" -type d 2>/dev/null || echo "No allure directories found"
           fi
 
       - name: Upload Allure results
