@@ -10,6 +10,7 @@
 
         <!-- Allure Configuration -->
         <AllureConfig>allureConfig.json</AllureConfig>
+        <AllureResultsDirectory>allure-results</AllureResultsDirectory>
     </PropertyGroup>
 
     <ItemGroup>

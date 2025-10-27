@@ -104,52 +104,43 @@ jobs:
           cd src
           echo "=== Running unit tests with Allure ==="
 
-          # Убедитесь, что Allure конфигурация доступна
-          ls -la UnitTests/allureConfig.json
+          # Создаем правильную директорию для результатов
+          mkdir -p ../allure-results-unit
 
-          # Запускаем тесты с правильными параметрами для Allure
+          # Запускаем тесты с явным указанием директории для Allure
           dotnet test UnitTests/UnitTests.csproj \
             --logger "trx;LogFileName=unit-tests.trx" \
             --results-directory "../test-results" \
             --logger "console;verbosity=detailed" \
+            --environment "ALLURE_RESULTS_DIR=../allure-results-unit" \
             --environment "ALLURE_CONFIG=UnitTests/allureConfig.json"
 
-          echo "=== Checking for Allure results ==="
-          find . -name "allure-results" -type d 2>/dev/null || echo "No allure-results directories found"
-          find . -name "*.json" -path "*/allure-results/*" 2>/dev/null | head -10 || echo "No allure JSON files found"
-
+          echo "=== Checking test results ==="
+          ls -la ../test-results/
+          
       - name: Collect Allure results
         run: |
           echo "=== Collecting Allure results ==="
 
-          # Создаем директорию для результатов
-          mkdir -p allure-results-unit
+          # Проверяем, где реально сохранились результаты
+          echo "Searching for Allure results..."
+          find . -name "allure-results" -type d 2>/dev/null | head -10
+          find . -name "*-result.json" -type f 2>/dev/null | head -10
 
-          # Ищем Allure результаты в разных возможных местах
+          # Копируем из известного места
+          if [ -d "allure-results-unit" ]; then
+            echo "Found results in allure-results-unit"
+            cp -r allure-results-unit/* allure-results-unit-final/ 2>/dev/null || true
+          fi
+
+          # Если в стандартной директории
           if [ -d "src/UnitTests/bin/Debug/net9.0/allure-results" ]; then
-            echo "Found Allure results in Debug directory"
-            cp -r src/UnitTests/bin/Debug/net9.0/allure-results/* allure-results-unit/
-          elif [ -d "src/UnitTests/bin/Release/net9.0/allure-results" ]; then
-            echo "Found Allure results in Release directory"
-            cp -r src/UnitTests/bin/Release/net9.0/allure-results/* allure-results-unit/
-          elif [ -d "src/allure-results" ]; then
-            echo "Found Allure results in src directory"
-            cp -r src/allure-results/* allure-results-unit/
-          else
-            echo "WARNING: No standard Allure results found!"
-            echo "Searching for any JSON results..."
-            find src -name "*-result.json" -exec cp {} allure-results-unit/ \; 2>/dev/null || true
-            find src -name "*-container.json" -exec cp {} allure-results-unit/ \; 2>/dev/null || true
+            echo "Found results in bin directory"
+            cp -r src/UnitTests/bin/Debug/net9.0/allure-results/* allure-results-unit-final/ 2>/dev/null || true
           fi
 
-          echo "Copied files in allure-results-unit:"
-          ls -la allure-results-unit/ 2>/dev/null || echo "Directory is empty"
-
-          # Если файлов нет, создаем заглушку для отладки
-          if [ ! "$(ls -A allure-results-unit/ 2>/dev/null)" ]; then
-            echo "Creating debug file to understand the issue"
-            echo '{"error": "No Allure results generated", "config": "Check Allure.Xunit integration"}' > allure-results-unit/debug-info.json
-          fi
+          echo "Final results:"
+          ls -la allure-results-unit-final/ 2>/dev/null || echo "No results found"
 
       - name: Upload Allure results
         uses: actions/upload-artifact@v4
