@@ -1,31 +1,20 @@
 ﻿{
   "allure": {
-    "directory": "../../../allure-results-unit",
+    "directory": "allure-results",
     "links": [
       "https://github.com/BluPnch/testing/issues/{issue}",
       "https://example.org/{tms}"
     ]
   },
-  "specflow": {
-    "stepArguments": {
-      "convertToParameters": true,
-      "paramNameRegex": "",
-      "paramValueRegex": ""
-    },
-    "grouping": {
-      "suites": {
-        "parentSuite": "^ParentSuite",
-        "suite": "^Suite",
-        "subSuite": "^SubSuite"
-      },
-      "behaviors": {
-        "epic": "^Epic",
-        "story": "^Story(?:.*)"
-      }
-    },
-    "labels": {
-      "owner": "^author",
-      "severity": "^severity"
-    }
+  "labels": {
+    "layer": ["unit"]
+  },
+  "behaviors": {
+    "severity": ["normal"]
+  },
+  "environment": {
+    "test_type": "Unit",
+    "framework": "xUnit",
+    "allure_version": "2.14.1"
   }
 }
