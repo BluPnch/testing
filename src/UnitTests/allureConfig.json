@@ -6,26 +6,12 @@
       "https://example.org/{tms}"
     ]
   },
-  "specflow": {
-    "stepArguments": {
-      "convertToParameters": true,
-      "paramNameRegex": "",
-      "paramValueRegex": ""
-    },
-    "grouping": {
-      "suites": {
-        "parentSuite": "^ParentSuite",
-        "suite": "^Suite",
-        "subSuite": "^SubSuite"
-      },
-      "behaviors": {
-        "epic": "^Epic",
-        "story": "^Story(?:.*)"
-      }
-    },
-    "labels": {
-      "owner": "^author",
-      "severity": "^severity"
-    }
+  "labels": {
+    "layer": ["unit"]
+  },
+  "environment": {
+    "test_type": "Unit",
+    "framework": "xUnit",
+    "allure_version": "2.14.1"
   }
 }
