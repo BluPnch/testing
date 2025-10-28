@@ -21,8 +21,7 @@ namespace E2ETests
         {
             _client = new HttpClient
             {
-                // Укажите базовый URL вашего запущенного сервера
-                BaseAddress = new System.Uri("http://localhost:5097/") // или другой порт, на котором запущен ваш сервер
+                BaseAddress = new System.Uri("http://localhost:5097/") 
             };
         }
 
