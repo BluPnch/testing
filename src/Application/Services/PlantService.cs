@@ -29,7 +29,7 @@ public class PlantService : IPlantService
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public async Task<Plant> CreatePlantAsync(Plant plant, Guid clientId)
+    public async Task<Plant> CreatePlantAsync(Plant plant)
     {
         if (plant == null)
         {
@@ -37,30 +37,30 @@ public class PlantService : IPlantService
             throw new ArgumentNullException(nameof(plant));
         }
 
-        if (clientId == Guid.Empty)
+        if (plant.ClientId == Guid.Empty)
         {
             _logger.LogWarning("Attempted to create plant with empty client ID");
-            throw new ArgumentException("Client ID cannot be empty", nameof(clientId));
+            throw new ArgumentException("Client ID cannot be empty", nameof(plant.ClientId));
         }
 
-        _logger.LogInformation("Attempting to create plant with ID: {PlantId} for client: {ClientId}", plant.Id, clientId);
+        _logger.LogInformation("Attempting to create plant with ID: {PlantId} for client: {ClientId}", plant.Id, plant.ClientId);
         try
         {
-            var client = await _clientRepository.GetClientByIdAsync(clientId);
+            var client = await _clientRepository.GetClientByIdAsync(plant.ClientId);
             if (client == null)
             {
-                _logger.LogWarning("Client with ID {ClientId} not found", clientId);
-                throw new ArgumentException("Клиент не найден", nameof(clientId));
+                _logger.LogWarning("Client with ID {ClientId} not found", plant.ClientId);
+                throw new ArgumentException("Клиент не найден", nameof(plant.ClientId));
             }
 
             await _plantValidator.ValidateAndThrowAsync(plant);
-            var result = await _plantRepository.CreatePlantAsync(plant, clientId);
-            _logger.LogInformation("Successfully created plant with ID: {PlantId} for client: {ClientId}", plant.Id, clientId);
+            var result = await _plantRepository.CreatePlantAsync(plant);
+            _logger.LogInformation("Successfully created plant with ID: {PlantId} for client: {ClientId}", plant.Id, plant.ClientId);
             return result;
         }
         catch (Exception ex) when (ex is not ArgumentException)
         {
-            _logger.LogError(ex, "Error creating plant with ID: {PlantId} for client: {ClientId}", plant.Id, clientId);
+            _logger.LogError(ex, "Error creating plant with ID: {PlantId} for client: {ClientId}", plant.Id, plant.ClientId);
             throw new ApplicationException("Failed to create plant", ex);
         }
     }

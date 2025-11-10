@@ -4,7 +4,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using Domain.Interfaces;
-using Domain.Models.Enums;
+using Server.Controllers.Models;
+using Server.Controllers.Converters;
 using Server.Extensions;
 
 
@@ -40,7 +41,7 @@ public class ClientController : ControllerBase
     /// <response code="500">Ошибка на стороне сервера.</response>
     [HttpGet]
     [Authorize(Roles = "Administrator,Employee")]
-    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(IEnumerable<Client>),
+    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(IEnumerable<ClientDTO>),
         Description = "Список клиентов успешно получен.")]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "Некорректные параметры запроса.")]
     [SwaggerResponse(StatusCodes.Status401Unauthorized, "Пользователь не авторизован.")]
@@ -70,7 +71,7 @@ public class ClientController : ControllerBase
                 {
                     return NotFound("Клиент не найден");
                 }
-                return Ok(new List<Client> { client });
+                return Ok(new List<ClientDTO> { ClientConverter.ToDTO(client) });
             }
 
             if (!string.IsNullOrEmpty(phoneNumber))
@@ -80,11 +81,11 @@ public class ClientController : ControllerBase
                 {
                     return NotFound("Клиент не найден");
                 }
-                return Ok(new List<Client> { client });
+                return Ok(new List<ClientDTO> { ClientConverter.ToDTO(client) });
             }
 
             var clients = await _clientService.GetAllClientsAsync();
-            return Ok(clients);
+            return Ok(ClientConverter.ToDTO(clients));
         }
         catch (UnauthorizedAccessException e)
         {
@@ -120,7 +121,7 @@ public class ClientController : ControllerBase
     /// <response code="500">Ошибка на стороне сервера.</response>
     [HttpGet("{id:guid}")]
     [Authorize(Roles = "Administrator,Employee")]
-    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(Client), Description = "Клиент успешно получен.")]
+    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(ClientDTO), Description = "Клиент успешно получен.")]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "Некорректный идентификатор.")]
     [SwaggerResponse(StatusCodes.Status401Unauthorized, "Пользователь не авторизован.")]
     [SwaggerResponse(StatusCodes.Status403Forbidden, "Недостаточно прав.")]
@@ -151,7 +152,7 @@ public class ClientController : ControllerBase
                 return NotFound("Клиент не найден");
             }
 
-            return Ok(client);
+            return Ok(ClientConverter.ToDTO(client));
         }
         catch (UnauthorizedAccessException e)
         {
@@ -185,7 +186,7 @@ public class ClientController : ControllerBase
     /// <response code="500">Ошибка на стороне сервера.</response>
     [HttpGet("plants")]
     [Authorize(Roles = "Client")]
-    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(IEnumerable<Plant>), Description = "Список растений успешно получен.")]
+    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(IEnumerable<PlantDTO>), Description = "Список растений успешно получен.")]
     [SwaggerResponse(StatusCodes.Status401Unauthorized, "Пользователь не авторизован.")]
     [SwaggerResponse(StatusCodes.Status403Forbidden, "Недостаточно прав.")]
     [SwaggerResponse(StatusCodes.Status404NotFound, "Клиент не найден.")]
@@ -208,7 +209,7 @@ public class ClientController : ControllerBase
             }
 
             var plants = await _clientService.GetClientPlantsAsync(clientId);
-            return Ok(plants);
+            return Ok(PlantConverter.ToDTO(plants));
         }
         catch (UnauthorizedAccessException e)
         {
@@ -232,7 +233,7 @@ public class ClientController : ControllerBase
     /// <response code="500">Ошибка на стороне сервера.</response>
     [HttpGet("journal-records")]
     [Authorize(Roles = "Client")]
-    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(IEnumerable<JournalRecord>), Description = "Список записей успешно получен.")]
+    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(IEnumerable<JournalRecordDTO>), Description = "Список записей успешно получен.")]
     [SwaggerResponse(StatusCodes.Status401Unauthorized, "Пользователь не авторизован.")]
     [SwaggerResponse(StatusCodes.Status403Forbidden, "Недостаточно прав.")]
     [SwaggerResponse(StatusCodes.Status404NotFound, "Клиент не найден.")]
@@ -255,7 +256,7 @@ public class ClientController : ControllerBase
             }
 
             var records = await _clientService.GetClientJournalRecordsAsync(clientId);
-            return Ok(records);
+            return Ok(JournalRecordConverter.ToDTO(records));
         }
         catch (UnauthorizedAccessException e)
         {
@@ -274,7 +275,7 @@ public class ClientController : ControllerBase
     /// Изменить роль пользователя.
     /// </summary>
     /// <param name="clientId">Идентификатор пользователя.</param>
-    /// <param name="request">Данные для изменения роли.</param>
+    /// <param name="requestDto">Данные для изменения роли.</param>
     /// <response code="200">Роль пользователя успешно изменена.</response>
     /// <response code="400">Некорректные данные.</response>
     /// <response code="401">Пользователь не авторизован</response>
@@ -283,13 +284,13 @@ public class ClientController : ControllerBase
     /// <response code="500">Ошибка на стороне сервера.</response>
     [HttpPatch("{clientId}/role")]
     [Authorize(Roles = "Administrator")]
-    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(AuthUser), Description = "Роль пользователя успешно изменена.")]
+    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(AuthUserDTO), Description = "Роль пользователя успешно изменена.")]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "Некорректные данные.")]
     [SwaggerResponse(StatusCodes.Status401Unauthorized, "Пользователь не авторизован.")]
     [SwaggerResponse(StatusCodes.Status403Forbidden, "Недостаточно прав.")]
     [SwaggerResponse(StatusCodes.Status404NotFound, "Пользователь не найден.")]
     [SwaggerResponse(StatusCodes.Status500InternalServerError, "Ошибка на стороне сервера.")]
-    public async Task<IActionResult> UpdateUserRole(Guid clientId, UpdateUserRoleRequest request)
+    public async Task<IActionResult> UpdateUserRole(Guid clientId, UpdateUserRoleRequestDto requestDto)
     {
         try
         {
@@ -310,8 +311,8 @@ public class ClientController : ControllerBase
                 return NotFound("Пользователь не найден");
             }
 
-            var updatedUser = await _authService.UpdateUserRoleAsync(clientId, request.NewRole, administratorId);
-            return Ok(updatedUser);
+            var updatedUser = await _authService.UpdateUserRoleAsync(clientId, requestDto.NewRole, administratorId);
+            return Ok(AuthUserConverter.ToDTO(updatedUser));
         }
         catch (UnauthorizedAccessException e)
         {
@@ -328,11 +329,5 @@ public class ClientController : ControllerBase
             _logger.LogError(e, "Error in method {MethodName}", nameof(UpdateUserRole));
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
-    }
-    
-    
-    public class UpdateUserRoleRequest
-    {
-        public EnumAuth NewRole { get; set; }
     }
 }

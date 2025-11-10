@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using Domain.Exceptions;
+using Server.Controllers.Models;
+using Server.Controllers.Converters;
 
 namespace Server.Controllers;
 
@@ -34,7 +36,7 @@ public class JournalRecordController : ControllerBase
     /// <response code="500">Ошибка на стороне сервера.</response>
     [HttpGet]
     [Authorize(Roles = "Administrator,Employee")]
-    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(IEnumerable<JournalRecord>), Description = "Список записей успешно получен.")]
+    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(IEnumerable<JournalRecordDTO>), Description = "Список записей успешно получен.")]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "Некорректные параметры запроса.")]
     [SwaggerResponse(StatusCodes.Status401Unauthorized, "Пользователь не авторизован.")]
     [SwaggerResponse(StatusCodes.Status403Forbidden, "Недостаточно прав.")]
@@ -64,7 +66,7 @@ public class JournalRecordController : ControllerBase
                 {
                     return NotFound("Записи журнала для указанного растения не найдены");
                 }
-                return Ok(records);
+                return Ok(JournalRecordConverter.ToDTO(records));
             }
 
             if (startDate.HasValue || endDate.HasValue)
@@ -81,11 +83,11 @@ public class JournalRecordController : ControllerBase
                 {
                     return NotFound("Записи журнала за указанный период не найдены");
                 }
-                return Ok(records);
+                return Ok(JournalRecordConverter.ToDTO(records));
             }
 
             var allRecords = await _journalRecordService.GetAllJournalRecordsAsync();
-            return Ok(allRecords);
+            return Ok(JournalRecordConverter.ToDTO(allRecords));
         }
         catch (UnauthorizedAccessException e)
         {
@@ -121,7 +123,7 @@ public class JournalRecordController : ControllerBase
     /// <response code="500">Ошибка на стороне сервера.</response>
     [HttpGet("{id:guid}")]
     [Authorize(Roles = "Administrator,Employee")]
-    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(JournalRecord), Description = "Запись журнала успешно получена.")]
+    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(JournalRecordDTO), Description = "Запись журнала успешно получена.")]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "Некорректный идентификатор.")]
     [SwaggerResponse(StatusCodes.Status401Unauthorized, "Пользователь не авторизован.")]
     [SwaggerResponse(StatusCodes.Status403Forbidden, "Недостаточно прав.")]
@@ -152,7 +154,7 @@ public class JournalRecordController : ControllerBase
                 return NotFound("Запись журнала не найдена");
             }
 
-            return Ok(record);
+            return Ok(JournalRecordConverter.ToDTO(record));
         }
         catch (UnauthorizedAccessException e)
         {
@@ -188,12 +190,12 @@ public class JournalRecordController : ControllerBase
     /// <response code="500">Ошибка на стороне сервера.</response>
     [HttpPost]
     [Authorize(Roles = "Administrator,Employee")]
-    [SwaggerResponse(StatusCodes.Status201Created, Type = typeof(JournalRecord), Description = "Запись успешно создана.")]
+    [SwaggerResponse(StatusCodes.Status201Created, Type = typeof(JournalRecordDTO), Description = "Запись успешно создана.")]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "Некорректные данные записи.")]
     [SwaggerResponse(StatusCodes.Status401Unauthorized, "Пользователь не авторизован.")]
     [SwaggerResponse(StatusCodes.Status403Forbidden, "Недостаточно прав.")]
     [SwaggerResponse(StatusCodes.Status500InternalServerError, "Ошибка на стороне сервера.")]
-    public async Task<IActionResult> Create([FromBody] JournalRecord journalRecord)
+    public async Task<IActionResult> Create([FromBody] JournalRecordDTO journalRecordDto)
     {
         try
         {
@@ -207,8 +209,9 @@ public class JournalRecordController : ControllerBase
                 return Forbid("Недостаточно прав для выполнения операции");
             }
 
+            var journalRecord = JournalRecordConverter.ToDomain(journalRecordDto);
             var createdRecord = await _journalRecordService.CreateJournalRecordAsync(journalRecord);
-            return CreatedAtAction(nameof(GetJournalRecords), new { id = createdRecord.Id }, createdRecord);
+            return CreatedAtAction(nameof(GetJournalRecords), new { id = createdRecord.Id }, JournalRecordConverter.ToDTO(createdRecord));
         }
         catch (UnauthorizedAccessException e)
         {
@@ -291,7 +294,7 @@ public class JournalRecordController : ControllerBase
     [SwaggerResponse(StatusCodes.Status403Forbidden, "Недостаточно прав.")]
     [SwaggerResponse(StatusCodes.Status404NotFound, "Запись не найдена.")]
     [SwaggerResponse(StatusCodes.Status500InternalServerError, "Ошибка на стороне сервера.")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] JournalRecord journalRecord)
+    public async Task<IActionResult> Update(Guid id, [FromBody] JournalRecordDTO journalRecordDto)
     {
         try
         {
@@ -305,11 +308,12 @@ public class JournalRecordController : ControllerBase
                 return Forbid("Недостаточно прав для выполнения операции");
             }
 
-            if (id != journalRecord.Id)
+            if (id != journalRecordDto.Id)
             {
                 return BadRequest("ID в URL не совпадает с ID в теле запроса");
             }
 
+            var journalRecord = JournalRecordConverter.ToDomain(journalRecordDto);
             await _journalRecordService.UpdateJournalRecordAsync(journalRecord);
             return NoContent();
         }

@@ -10,7 +10,7 @@ public interface IPlantRepository
     /// <param name="plant">Данные растения.</param>
     /// <param name="clientId">ID клиента-владельца растения.</param>
     /// <returns>Созданное растение.</returns>
-    Task<Plant> CreatePlantAsync(Plant plant, Guid clientId);
+    Task<Plant> CreatePlantAsync(Plant plant);
 
     /// <summary>
     /// Получить растение по его идентификатору.

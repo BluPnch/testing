@@ -2,7 +2,7 @@ using Domain.Models;
 using UnitTests.Builders;
 
 
-namespace UnitTests.MotherObjects
+namespace UnitTests.ObjectMother
 {
     public static class PlantMotherObject
     {

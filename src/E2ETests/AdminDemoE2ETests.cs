@@ -4,35 +4,40 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Allure.Net.Commons;
 using Xunit;
 using FluentAssertions;
+using Allure.Xunit.Attributes;
 
 namespace E2ETests
 {
-    public class AdminDemoE2ETests
+    [AllureSuite("Administrator Demo E2E Tests")]
+    [AllureFeature("Complete User Journey")]
+    public class AdminDemoE2ETests : IClassFixture<GreenhouseWebApplicationFactory>
     {
-        private readonly HttpClient _client;
+        private readonly GreenhouseWebApplicationFactory _factory;
         private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
         };
 
-        public AdminDemoE2ETests()
+        public AdminDemoE2ETests(GreenhouseWebApplicationFactory factory)
         {
-            _client = new HttpClient
-            {
-                BaseAddress = new System.Uri("http://localhost:5097/") 
-            };
+            _factory = factory;
         }
 
+        [AllureStory("Complete Administrator Journey")]
+        [AllureSeverity(SeverityLevel.critical)]
         [Fact]
         public async Task Administrator_Complete_Journey_Demo_Should_Succeed()
         {
+            var client = _factory.CreateClient();
+
             // STEP 1: Login
             var loginRequest = new { username = "admin@gh.com", password = "admin123" };
             var loginPayload = JsonSerializer.Serialize(loginRequest);
             using var loginContent = new StringContent(loginPayload, Encoding.UTF8, "application/json");
-            var loginResponse = await _client.PostAsync("/api/v1/auth/login", loginContent);
+            var loginResponse = await client.PostAsync("/api/v1/auth/login", loginContent);
 
             loginResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -43,28 +48,26 @@ namespace E2ETests
             loginResult!.Token.Should().NotBeNullOrEmpty();
 
             // Set token
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", loginResult.Token);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", loginResult.Token);
 
             // STEP 2: View clients
-            var clientsResponse = await _client.GetAsync("/api/v1/clients");
+            var clientsResponse = await client.GetAsync("/api/v1/clients");
             clientsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
             // STEP 3: Check admin access
-            var administratorsResponse = await _client.GetAsync("/api/v1/administrators");
+            var administratorsResponse = await client.GetAsync("/api/v1/administrators");
             administratorsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-            var employeesResponse = await _client.GetAsync("/api/v1/employees");
+            var employeesResponse = await client.GetAsync("/api/v1/employees");
             employeesResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         }
 
+        [AllureStory("Administrator Security Demo")]
+        [AllureSeverity(SeverityLevel.critical)]
         [Fact]
         public async Task Unauthorized_Access_Demo_Should_Be_Blocked()
         {
-            // Создаем нового клиента без авторизации
-            using var client = new HttpClient 
-            { 
-                BaseAddress = new System.Uri("http://localhost:5097/") 
-            };
+            var client = _factory.CreateClient();
 
             var endpoints = new[] { "/api/v1/administrators", "/api/v1/clients", "/api/v1/employees" };
 

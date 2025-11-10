@@ -107,13 +107,16 @@ jobs:
           # Создаем правильную директорию для результатов
           mkdir -p ../allure-results-unit
 
+          # Копируем конфиг в текущую директорию для Allure
+          cp UnitTests/allureConfig.json allureConfig.json
+
           # Запускаем тесты с явным указанием директории для Allure
           dotnet test UnitTests/UnitTests.csproj \
             --logger "trx;LogFileName=unit-tests.trx" \
             --results-directory "../test-results" \
             --logger "console;verbosity=detailed" \
             --environment "ALLURE_RESULTS_DIR=../allure-results-unit" \
-            --environment "ALLURE_CONFIG=UnitTests/allureConfig.json"
+            --verbosity normal
 
           echo "=== Checking test results ==="
           ls -la ../test-results/
@@ -160,7 +163,7 @@ jobs:
 
   integration_tests:
     runs-on: ubuntu-latest
-    needs: unit_tests
+    needs: build
     services:
       postgres:
         image: postgres:15
@@ -224,7 +227,7 @@ jobs:
 
   e2e_tests:
     runs-on: ubuntu-latest
-    needs: integration_tests
+    needs: build
     services:
       postgres:
         image: postgres:15
@@ -253,6 +256,11 @@ jobs:
         run: |
           npm install dotenv pg
 
+      - name: Install E2E system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget unzip fontconfig libfreetype6 libx11-6 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6
+
       - name: Clean test database
         run: |
           echo "Cleaning test database..."
@@ -264,74 +272,20 @@ jobs:
           "
           node scripts/init-test-schema.js || echo "Schema initialized"
 
-      - name: Build and start API server
-        run: |
-          cd src
-          echo "=== Building API project ==="
-          dotnet build Server/Server.csproj --verbosity normal
-          
-          echo "=== Starting API server in background ==="
-          nohup dotnet run --project Server/Server.csproj --urls="http://localhost:5097" > ../api-server.log 2>&1 &
-          echo $! > ../api-server.pid
-          
-          echo "=== Waiting for API to start ==="
-          sleep 15
-          
-          echo "=== Checking if API is running ==="
-          curl -f http://localhost:5097/swagger/v1/swagger.json || echo "API might not be fully ready"
-          
-          echo "=== API Server logs ==="
-          cat ../api-server.log || echo "No server logs yet"
-
-      - name: Wait for API to be ready
-        run: |
-          echo "=== Waiting for API to be ready ==="
-          timeout 60s bash -c 'until curl -f http://localhost:5097/swagger/v1/swagger.json > /dev/null 2>&1; do sleep 3; echo "Waiting for API..."; done' || echo "API health check timeout, continuing..."
-      
       - name: Run E2E tests with Allure
         run: |
           cd src
           # Очищаем предыдущие результаты
           rm -rf ../allure-results-e2e
           mkdir -p ../allure-results-e2e
-
-          echo "=== Building and running E2E tests ==="
-
-          # Собираем проект
-          dotnet build E2ETests/E2ETests.csproj --verbosity normal
-
-          # Запускаем тесты с реальным сервером
-          dotnet test E2ETests/E2ETests.csproj \
-            --logger "trx;LogFileName=e2e-tests.trx" \
-            --results-directory "../test-results" \
-            --verbosity detailed \
-            --no-build \
-            --environment "ASPNETCORE_ENVIRONMENT=Development" \
-            --environment "ASPNETCORE_URLS=https://localhost:7001;http://localhost:5001"
-
+          
+          # Запускаем тесты с Allure
+          dotnet test E2ETests/E2ETests.csproj --logger "trx;LogFileName=e2e-tests.trx" --results-directory "../test-results"
+          
           # Копируем Allure результаты если они создались
           if [ -d "E2ETests/bin/Debug/net9.0/allure-results" ]; then
             cp -r E2ETests/bin/Debug/net9.0/allure-results/* ../allure-results-e2e/
           fi
-
-      - name: Show API server logs on failure
-        if: failure()
-        run: |
-          echo "=== API Server logs (on failure) ==="
-          cat ../api-server.log || echo "No server logs available"
-
-          echo "=== Checking running processes ==="
-          ps aux | grep dotnet || echo "No dotnet processes found"
-
-      - name: Stop API server
-        if: always()
-        run: |
-          echo "=== Stopping API server ==="
-          if [ -f ../api-server.pid ]; then
-            kill $(cat ../api-server.pid) 2>/dev/null || echo "Process already stopped"
-            rm -f ../api-server.pid
-          fi
-          pkill -f "dotnet.*Greenhouse" 2>/dev/null || echo "No API processes found"
 
       - name: Upload Allure results
         uses: actions/upload-artifact@v4
@@ -339,14 +293,6 @@ jobs:
           name: allure-results-e2e
           path: allure-results-e2e/
           retention-days: 30
-
-      - name: Upload API server logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: api-server-logs
-          path: api-server.log
-          retention-days: 7
 
   allure_report:
     runs-on: ubuntu-latest

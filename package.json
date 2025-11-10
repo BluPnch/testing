@@ -11,11 +11,11 @@
     "test:unit": "powershell -ExecutionPolicy Bypass -File ./scripts/run_tests.ps1 unit",
     "test:integration": "powershell -ExecutionPolicy Bypass -File ./scripts/run_tests.ps1 integration",
     "test:e2e": "powershell -ExecutionPolicy Bypass -File ./scripts/run-e2e-tests.ps1",
-    "test:e2e:ci": "dotnet test src/E2ETests/E2ETests.csproj --logger \"trx;LogFileName=e2e-tests.trx\" --results-directory \"test-results\"",
     "test:e2e:filter": "powershell -ExecutionPolicy Bypass -File ./scripts/run-e2e-tests.ps1 -Filter",
     "test:e2e:report": "powershell -ExecutionPolicy Bypass -File ./scripts/run-e2e-tests.ps1 -OpenReport",
     "test:e2e:node": "cd test/e2e && npm test",
     "test:e2e:setup": "cd test/e2e && npm install",
+    "test:e2e:ci": "cd test/e2e && npm run test:ci",
     "test:ci": "docker-compose -f docker-compose.test.yml run --rm test-runner",
     "servers": "powershell -ExecutionPolicy Bypass -File ./scripts/start-servers.ps1",
     "servers:batch": "scripts\\start-servers.bat",
@@ -38,3 +38,4 @@
     "supertest": "^6.3.4"
   }
 }
+

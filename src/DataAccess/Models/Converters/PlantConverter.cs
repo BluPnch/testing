@@ -21,13 +21,13 @@ public static class PlantConverter
         );
     }
 
-    public static PlantDb? ToDb(this Plant? plant, Guid clientId)
+    public static PlantDb? ToDb(this Plant? plant)
     {
         if (plant is null) return null;
 
         return new PlantDb(
             id: plant.Id,
-            clientId: clientId,
+            clientId: plant.ClientId,
             specie: plant.Specie,
             family: plant.Family,
             flower: plant.Flower,

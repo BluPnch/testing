@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Domain.Interfaces;
+using Server.Controllers.Models;
+using Server.Controllers.Converters;
 using Swashbuckle.AspNetCore.Annotations;
 
 
@@ -23,34 +25,34 @@ public class AuthController : ControllerBase
     /// <response code="401">Неверные учетные данные или ошибка валидации</response>
     /// <response code="500">Ошибка на стороне сервера.</response>
     [HttpPost("login")]
-    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(LoginResponse), Description = "Успешный вход в систему")]
+    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(LoginResponseDto), Description = "Успешный вход в систему")]
     [SwaggerResponse(StatusCodes.Status401Unauthorized, Description = "Неверные учетные данные или ошибка валидации")]
     [SwaggerResponse(StatusCodes.Status500InternalServerError, "Ошибка на стороне сервера.")]
-    public async Task<IActionResult> Login([FromBody] LoginRequest request)
+    public async Task<IActionResult> Login([FromBody] LoginRequestDto requestDto)
     {
         try
         {
-            if (request == null)
+            if (requestDto == null)
             {
                 return Unauthorized(new { error = "Запрос не может быть пустым" });
             }
 
-            if (string.IsNullOrEmpty(request.Username))
+            if (string.IsNullOrEmpty(requestDto.Username))
             {
                 return Unauthorized(new { error = "Имя пользователя не может быть пустым" });
             }
 
-            if (string.IsNullOrEmpty(request.Password))
+            if (string.IsNullOrEmpty(requestDto.Password))
             {
                 return Unauthorized(new { error = "Пароль не может быть пустым" });
             }
 
-            var token = await _authService.LoginAsync(request.Username, request.Password);
-            var user = await _authService.GetUserByUsernameAsync(request.Username);
+            var token = await _authService.LoginAsync(requestDto.Username, requestDto.Password);
+            var user = await _authService.GetUserByUsernameAsync(requestDto.Username);
 
-            LoginResponse loginResponse = new LoginResponse { Token = token, Username = user.Username };
+            LoginResponseDto loginResponseDto = new LoginResponseDto { Token = token, Username = user.Username };
 
-            return Ok(loginResponse);
+            return Ok(loginResponseDto);
         }
         catch (UnauthorizedAccessException)
         {
@@ -69,31 +71,31 @@ public class AuthController : ControllerBase
     /// <response code="400">Ошибка валидации</response>
     /// <response code="409">Пользователь с таким email уже существует</response>
     [HttpPost("register")]
-    [SwaggerResponse(StatusCodes.Status201Created, Type = typeof(LoginResponse), Description = "Пользователь успешно зарегистрирован")]
+    [SwaggerResponse(StatusCodes.Status201Created, Type = typeof(LoginResponseDto), Description = "Пользователь успешно зарегистрирован")]
     [SwaggerResponse(StatusCodes.Status400BadRequest, Description = "Ошибка валидации")]
     [SwaggerResponse(StatusCodes.Status409Conflict, Description = "Пользователь с таким email уже существует")]
     [SwaggerResponse(StatusCodes.Status500InternalServerError, "Ошибка на стороне сервера.")]
-    public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+    public async Task<IActionResult> Register([FromBody] RegisterRequestDto requestDto)
     {
         try
         {
-            if (request == null)
+            if (requestDto == null)
             {
                 return BadRequest(new { error = "Запрос не может быть пустым" });
             }
 
-            if (string.IsNullOrEmpty(request.Email))
+            if (string.IsNullOrEmpty(requestDto.Email))
             {
                 return BadRequest(new { error = "Email не может быть пустым" });
             }
 
-            if (string.IsNullOrEmpty(request.Password))
+            if (string.IsNullOrEmpty(requestDto.Password))
             {
                 return BadRequest(new { error = "Пароль не может быть пустым" });
             }
 
-            var user = await _authService.RegisterAsync(request.Email, request.Password);
-            return CreatedAtAction(nameof(Register), new { id = user.Id }, user);
+            var user = await _authService.RegisterAsync(requestDto.Email, requestDto.Password);
+            return CreatedAtAction(nameof(Register), new { id = user.Id }, AuthUserConverter.ToDTO(user));
         }
         catch (InvalidOperationException ex)
         {
@@ -108,24 +110,4 @@ public class AuthController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
     }
-}
-
-public class LoginRequest
-{
-    public string Username { get; set; }
-    public string Password { get; set; }
-}
-
-public class LoginResponse
-{
-    public string Username { get; set; }
-    public string Token { get; set; }
-        
-}
-    
-    
-public class RegisterRequest
-{
-    public string Email { get; set; }
-    public string Password { get; set; }
 }

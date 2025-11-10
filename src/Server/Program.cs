@@ -117,6 +117,18 @@ public partial class Program
             
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "Greenhouse API", Version = "v1" });
             
+            // Используем полное имя типа (включая namespace) для schemaId, чтобы избежать конфликтов между доменными и DTO enum'ами
+            c.CustomSchemaIds(type =>
+            {
+                if (type.IsGenericType)
+                {
+                    var genericTypeName = type.GetGenericTypeDefinition().FullName?.Replace("+", ".") ?? type.Name;
+                    var genericArgs = string.Join(",", type.GetGenericArguments().Select(arg => arg.FullName?.Replace("+", ".") ?? arg.Name));
+                    return $"{genericTypeName}[{genericArgs}]";
+                }
+                return type.FullName?.Replace("+", ".") ?? type.Name;
+            });
+            
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",

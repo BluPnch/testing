@@ -16,12 +16,12 @@ namespace DataAccess.Repositories
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        public async Task<Plant> CreatePlantAsync(Plant plant, Guid clientId)
+        public async Task<Plant> CreatePlantAsync(Plant plant)
         {
             if (plant == null)
                 throw new ArgumentNullException(nameof(plant));
 
-            var plantDb = plant.ToDb(clientId);
+            var plantDb = plant.ToDb();
             _context.Plants.Add(plantDb!);
             await _context.SaveChangesAsync();
             return plantDb!.ToDomain()!;

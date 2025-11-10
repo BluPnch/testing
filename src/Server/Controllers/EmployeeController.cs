@@ -3,6 +3,8 @@ using Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Server.Extensions;
+using Server.Controllers.Models;
+using Server.Controllers.Converters;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace Server.Controllers;
@@ -34,7 +36,7 @@ public class EmployeeController : ControllerBase
     /// <response code="500">Ошибка на стороне сервера.</response>
     [HttpGet]
     [Authorize(Roles = "Administrator,Employee")]
-    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(IEnumerable<Employee>), Description = "Список сотрудников успешно получен.")]
+    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(IEnumerable<EmployeeDTO>), Description = "Список сотрудников успешно получен.")]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "Некорректные параметры запроса.")]
     [SwaggerResponse(StatusCodes.Status401Unauthorized, "Пользователь не авторизован.")]
     [SwaggerResponse(StatusCodes.Status403Forbidden, "Недостаточно прав.")]
@@ -64,7 +66,7 @@ public class EmployeeController : ControllerBase
                 {
                     return NotFound("Сотрудник не найден");
                 }
-                return Ok(new List<Employee> { employee });
+                return Ok(new List<EmployeeDTO> { EmployeeConverter.ToDTO(employee) });
             }
 
             if (!string.IsNullOrEmpty(task))
@@ -74,7 +76,7 @@ public class EmployeeController : ControllerBase
                 {
                     return NotFound("Сотрудники по указанной задаче не найдены");
                 }
-                return Ok(employees);
+                return Ok(EmployeeConverter.ToDTO(employees));
             }
 
             if (!string.IsNullOrEmpty(plantDomain))
@@ -84,11 +86,11 @@ public class EmployeeController : ControllerBase
                 {
                     return NotFound("Сотрудники по указанной сфере растений не найдены");
                 }
-                return Ok(employees);
+                return Ok(EmployeeConverter.ToDTO(employees));
             }
 
             var allEmployees = await _employeeService.GetAllEmployeesAsync();
-            return Ok(allEmployees);
+            return Ok(EmployeeConverter.ToDTO(allEmployees));
         }
         catch (UnauthorizedAccessException e)
         {
@@ -124,7 +126,7 @@ public class EmployeeController : ControllerBase
     /// <response code="500">Ошибка на стороне сервера.</response>
     [HttpGet("{id:guid}")]
     [Authorize(Roles = "Administrator,Employee")]
-    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(Employee), Description = "Сотрудник успешно получен.")]
+    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(EmployeeDTO), Description = "Сотрудник успешно получен.")]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "Некорректный идентификатор.")]
     [SwaggerResponse(StatusCodes.Status401Unauthorized, "Пользователь не авторизован.")]
     [SwaggerResponse(StatusCodes.Status403Forbidden, "Недостаточно прав.")]
@@ -155,7 +157,7 @@ public class EmployeeController : ControllerBase
                 return NotFound("Сотрудник не найден");
             }
 
-            return Ok(employee);
+            return Ok(EmployeeConverter.ToDTO(employee));
         }
         catch (UnauthorizedAccessException e)
         {
@@ -239,7 +241,7 @@ public class EmployeeController : ControllerBase
     /// <response code="500">Ошибка на стороне сервера.</response>
     [HttpGet("plants")]
     [Authorize(Roles = "Administrator,Employee")]
-    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(IEnumerable<Plant>), Description = "Список растений успешно получен.")]
+    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(IEnumerable<PlantDTO>), Description = "Список растений успешно получен.")]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "Некорректные данные.")]
     [SwaggerResponse(StatusCodes.Status401Unauthorized, "Пользователь не авторизован.")]
     [SwaggerResponse(StatusCodes.Status403Forbidden, "Недостаточно прав.")]
@@ -261,7 +263,7 @@ public class EmployeeController : ControllerBase
             }
 
             var plants = await _employeeService.GetPlantsByEmployeeIdAsync(employeeId);
-            return Ok(plants);
+            return Ok(PlantConverter.ToDTO(plants));
         }
         catch (UnauthorizedAccessException e)
         {

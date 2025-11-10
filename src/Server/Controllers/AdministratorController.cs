@@ -2,6 +2,8 @@ using Domain.Interfaces.Services;
 using Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Server.Controllers.Models;
+using Server.Controllers.Converters;
 using Swashbuckle.AspNetCore.Annotations;
 
 
@@ -27,19 +29,19 @@ public class AdministratorController : ControllerBase
     /// <summary>
     /// Создать нового администратора.
     /// </summary>
-    /// <param name="request">Данные для создания администратора.</param>
+    /// <param name="requestDto">Данные для создания администратора.</param>
     /// <response code="201">Администратор успешно создан.</response>
     /// <response code="400">Некорректные данные администратора.</response>
     /// <response code="401">Пользователь не авторизован</response>
     /// <response code="403">Недостаточно прав</response>
     /// <response code="500">Ошибка на стороне сервера.</response>
     [HttpPost]
-    [SwaggerResponse(StatusCodes.Status201Created, Type = typeof(Administrator), Description = "Администратор успешно создан.")]
+    [SwaggerResponse(StatusCodes.Status201Created, Type = typeof(AdministratorDTO), Description = "Администратор успешно создан.")]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "Некорректные данные администратора.")]
     [SwaggerResponse(StatusCodes.Status401Unauthorized, "Пользователь не авторизован.")]
     [SwaggerResponse(StatusCodes.Status403Forbidden, "Недостаточно прав.")]
     [SwaggerResponse(StatusCodes.Status500InternalServerError, "Ошибка на стороне сервера.")]
-    public async Task<IActionResult> Create([FromBody] CreateAdministratorRequest request)
+    public async Task<IActionResult> Create([FromBody] CreateAdministratorRequestDto requestDto)
     {
         try
         {
@@ -54,9 +56,9 @@ public class AdministratorController : ControllerBase
             }
 
             var createdAdministrator = await _administratorService.CreateAdministratorAsync(
-                Guid.NewGuid(), request.PhoneNumber, request.Surname, request.Name, 
-                request.Patronymic, request.Username, request.Password);
-            return CreatedAtAction(nameof(GetAllAdministrators), new { id = createdAdministrator.Id }, createdAdministrator);
+                Guid.NewGuid(), requestDto.PhoneNumber, requestDto.Surname, requestDto.Name, 
+                requestDto.Patronymic, requestDto.Username, requestDto.Password);
+            return CreatedAtAction(nameof(GetAllAdministrators), new { id = createdAdministrator.Id }, AdministratorConverter.ToDTO(createdAdministrator));
         }
         catch (UnauthorizedAccessException e)
         {
@@ -85,7 +87,7 @@ public class AdministratorController : ControllerBase
     /// <response code="500">Ошибка на стороне сервера.</response>
     [HttpGet]
     [Authorize(Roles = "Administrator")]
-    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(IEnumerable<Administrator>), Description = "Список администраторов успешно получен.")]
+    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(IEnumerable<AdministratorDTO>), Description = "Список администраторов успешно получен.")]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "Некорректные параметры запроса.")]
     [SwaggerResponse(StatusCodes.Status401Unauthorized, "Пользователь не авторизован.")]
     [SwaggerResponse(StatusCodes.Status403Forbidden, "Недостаточно прав.")]
@@ -116,7 +118,7 @@ public class AdministratorController : ControllerBase
                 {
                     return NotFound("Администратор не найден");
                 }
-                return Ok(new List<Administrator> { administrator });
+                return Ok(new List<AdministratorDTO> { AdministratorConverter.ToDTO(administrator) });
             }
 
             if (!string.IsNullOrEmpty(surname) && !string.IsNullOrEmpty(name))
@@ -127,11 +129,11 @@ public class AdministratorController : ControllerBase
                 {
                     return NotFound("Администратор не найден");
                 }
-                return Ok(new List<Administrator> { administrator });
+                return Ok(new List<AdministratorDTO> { AdministratorConverter.ToDTO(administrator) });
             }
 
             var administrators = await _administratorService.GetAllAdministratorsAsync();
-            return Ok(administrators);
+            return Ok(AdministratorConverter.ToDTO(administrators));
         }
         catch (UnauthorizedAccessException e)
         {
@@ -167,7 +169,7 @@ public class AdministratorController : ControllerBase
     /// <response code="500">Ошибка на стороне сервера.</response>
     [HttpGet("{id:guid}")]
     [Authorize(Roles = "Administrator")]
-    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(Administrator), Description = "Администратор успешно получен.")]
+    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(AdministratorDTO), Description = "Администратор успешно получен.")]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "Некорректный идентификатор.")]
     [SwaggerResponse(StatusCodes.Status401Unauthorized, "Пользователь не авторизован.")]
     [SwaggerResponse(StatusCodes.Status403Forbidden, "Недостаточно прав.")]
@@ -198,7 +200,7 @@ public class AdministratorController : ControllerBase
                 return NotFound("Администратор не найден");
             }
 
-            return Ok(administrator);
+            return Ok(AdministratorConverter.ToDTO(administrator));
         }
         catch (UnauthorizedAccessException e)
         {
@@ -220,15 +222,5 @@ public class AdministratorController : ControllerBase
             _logger.LogError(e, "Error in method {MethodName}", nameof(GetAdministratorById));
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
-    }
-    
-    public class CreateAdministratorRequest
-    {
-        public string PhoneNumber { get; set; }
-        public string Surname { get; set; }
-        public string Name { get; set; }
-        public string Patronymic { get; set; }
-        public string Username { get; set; }
-        public string Password { get; set; }
     }
 }

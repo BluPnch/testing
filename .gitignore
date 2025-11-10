@@ -11,3 +11,5 @@ wwwroot/
 node_modules/
 allure-report/
 packages/
+
+*.json

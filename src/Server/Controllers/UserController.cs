@@ -4,6 +4,8 @@ using Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using Swashbuckle.AspNetCore.Annotations;
+using Server.Controllers.Models;
+using Server.Controllers.Converters;
 
 
 
@@ -30,7 +32,7 @@ public class UserController : ControllerBase
     /// <response code="404">Пользователь не найден</response>
     [Authorize]
     [HttpGet("me")]
-    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(User))]
+    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(UserDTO))]
     [SwaggerResponse(StatusCodes.Status400BadRequest)]
     [SwaggerResponse(StatusCodes.Status401Unauthorized)]
     [SwaggerResponse(StatusCodes.Status404NotFound)]
@@ -68,7 +70,7 @@ public class UserController : ControllerBase
     /// <response code="500">Ошибка на стороне сервера</response>
     [Authorize(Roles = "Administrator")]
     [HttpGet("")]
-    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(List<User>))]
+    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(List<AuthUserDTO>))]
     [SwaggerResponse(StatusCodes.Status401Unauthorized)]
     [SwaggerResponse(StatusCodes.Status403Forbidden)]
     [SwaggerResponse(StatusCodes.Status500InternalServerError)]
@@ -77,7 +79,7 @@ public class UserController : ControllerBase
         try
         {
             var users = await _authService.GetAllAuthUsersAsync();
-            return Ok(users);
+            return Ok(AuthUserConverter.ToDTO(users));
         }
         catch (Exception ex)
         {

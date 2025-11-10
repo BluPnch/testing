@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Application.Validators;
 using Microsoft.Extensions.Logging;
+using Domain.Exceptions;
 
 namespace Application.Services
 {
@@ -126,10 +127,20 @@ namespace Application.Services
             }
 
             
-            var existingEmployee = await _employeeRepository.GetEmployeeByIdAsync(userId);
-            if (existingEmployee != null)
+            // Проверяем, является ли пользователь уже сотрудником
+            // Если Employee не найден - это нормально, значит клиент еще не сотрудник
+            try
             {
-                throw new InvalidOperationException("Пользователь уже является сотрудником");
+                var existingEmployee = await _employeeRepository.GetEmployeeByIdAsync(userId);
+                if (existingEmployee != null)
+                {
+                    throw new InvalidOperationException("Пользователь уже является сотрудником");
+                }
+            }
+            catch (EmployeeNotFoundException)
+            {
+                // Это нормально - клиент еще не является сотрудником
+                // Продолжаем выполнение
             }
 
             

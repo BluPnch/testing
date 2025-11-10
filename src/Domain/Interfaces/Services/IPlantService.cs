@@ -4,7 +4,7 @@ namespace Domain.Interfaces.Services;
 
 public interface IPlantService
 {
-    Task<Plant> CreatePlantAsync(Plant plant, Guid clientId);
+    Task<Plant> CreatePlantAsync(Plant plant);
 
     Task<Plant> GetPlantByIdAsync(Guid id);
 

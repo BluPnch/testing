@@ -3,6 +3,8 @@ using Domain.Models;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using Microsoft.AspNetCore.Authorization;
+using Server.Controllers.Models;
+using Server.Controllers.Converters;
 
 namespace Server.Controllers;
 
@@ -32,7 +34,7 @@ public class PlantController : ControllerBase
     /// <response code="500">Ошибка на стороне сервера.</response>
     [HttpGet]
     [Authorize]
-    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(IEnumerable<Plant>), Description = "Список растений успешно получен.")]
+    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(IEnumerable<PlantDTO>), Description = "Список растений успешно получен.")]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "Некорректные параметры запроса.")]
     [SwaggerResponse(StatusCodes.Status401Unauthorized, "Пользователь не авторизован.")]
     [SwaggerResponse(StatusCodes.Status403Forbidden, "Недостаточно прав.")]
@@ -56,7 +58,7 @@ public class PlantController : ControllerBase
                 {
                     return NotFound("Растения указанного семейства не найдены");
                 }
-                return Ok(plants);
+                return Ok(PlantConverter.ToDTO(plants));
             }
 
             if (!string.IsNullOrEmpty(species))
@@ -66,11 +68,11 @@ public class PlantController : ControllerBase
                 {
                     return NotFound("Растения указанного вида не найдены");
                 }
-                return Ok(plants);
+                return Ok(PlantConverter.ToDTO(plants));
             }
 
             var allPlants = await _plantService.GetAllPlantsAsync();
-            return Ok(allPlants);
+            return Ok(PlantConverter.ToDTO(allPlants));
         }
         catch (UnauthorizedAccessException e)
         {
@@ -106,7 +108,7 @@ public class PlantController : ControllerBase
     /// <response code="500">Ошибка на стороне сервера.</response>
     [HttpGet("{id:guid}")]
     [Authorize]
-    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(Plant), Description = "Растение успешно получено.")]
+    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(PlantDTO), Description = "Растение успешно получено.")]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "Некорректный идентификатор.")]
     [SwaggerResponse(StatusCodes.Status401Unauthorized, "Пользователь не авторизован.")]
     [SwaggerResponse(StatusCodes.Status403Forbidden, "Недостаточно прав.")]
@@ -132,7 +134,7 @@ public class PlantController : ControllerBase
                 return NotFound("Растение не найдено");
             }
 
-            return Ok(plant);
+            return Ok(PlantConverter.ToDTO(plant));
         }
         catch (UnauthorizedAccessException e)
         {
@@ -159,8 +161,7 @@ public class PlantController : ControllerBase
     /// <summary>
     /// Создать новое растение.
     /// </summary>
-    /// <param name="plant">Данные растения.</param>
-    /// <param name="clientId">Идентификатор клиента.</param>
+    /// <param name="plantDto">Данные растения.</param>
     /// <response code="201">Растение успешно создано.</response>
     /// <response code="400">Некорректные данные.</response>
     /// <response code="401">Пользователь не авторизован</response>
@@ -168,12 +169,12 @@ public class PlantController : ControllerBase
     /// <response code="500">Ошибка на стороне сервера.</response>
     [HttpPost]
     [Authorize]
-    [SwaggerResponse(StatusCodes.Status201Created, Type = typeof(Plant), Description = "Растение успешно создано.")]
+    [SwaggerResponse(StatusCodes.Status201Created, Type = typeof(PlantDTO), Description = "Растение успешно создано.")]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "Некорректные данные.")]
     [SwaggerResponse(StatusCodes.Status401Unauthorized, "Пользователь не авторизован.")]
     [SwaggerResponse(StatusCodes.Status403Forbidden, "Недостаточно прав.")]
     [SwaggerResponse(StatusCodes.Status500InternalServerError, "Ошибка на стороне сервера.")]
-    public async Task<IActionResult> Create([FromBody] Plant plant, [FromQuery] Guid clientId)
+    public async Task<IActionResult> Create([FromBody] PlantDTO plantDto)
     {
         try
         {
@@ -182,13 +183,16 @@ public class PlantController : ControllerBase
                 return Unauthorized("Пользователь не авторизован");
             }
 
-            if (clientId == Guid.Empty)
+            if (plantDto.ClientId == Guid.Empty)
             {
                 return BadRequest("Client ID is required");
             }
 
-            var createdPlant = await _plantService.CreatePlantAsync(plant, clientId);
-            return CreatedAtAction(nameof(GetPlants), new { id = createdPlant.Id }, createdPlant);
+            plantDto.Id = Guid.NewGuid();
+        
+            var plant = PlantConverter.ToDomain(plantDto);
+            var createdPlant = await _plantService.CreatePlantAsync(plant);
+            return CreatedAtAction(nameof(GetPlants), new { id = createdPlant.Id }, PlantConverter.ToDTO(createdPlant));
         }
         catch (UnauthorizedAccessException e)
         {
@@ -221,7 +225,7 @@ public class PlantController : ControllerBase
     [SwaggerResponse(StatusCodes.Status403Forbidden, "Недостаточно прав.")]
     [SwaggerResponse(StatusCodes.Status404NotFound, "Растение не найдено.")]
     [SwaggerResponse(StatusCodes.Status500InternalServerError, "Ошибка на стороне сервера.")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] Plant plant)
+    public async Task<IActionResult> Update(Guid id, [FromBody] PlantDTO plantDto)
     {
         try
         {
@@ -235,9 +239,10 @@ public class PlantController : ControllerBase
                 return Forbid("Недостаточно прав для выполнения операции");
             }
 
-            if (id != plant.Id)
+            if (id != plantDto.Id)
                 return BadRequest("ID in URL does not match ID in request body");
 
+            var plant = PlantConverter.ToDomain(plantDto);
             await _plantService.UpdatePlantAsync(plant);
             return NoContent();
         }

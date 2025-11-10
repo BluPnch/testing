@@ -3,6 +3,8 @@ using Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
+using Server.Controllers.Models;
+using Server.Controllers.Converters;
 
 namespace Server.Controllers;
 
@@ -31,7 +33,7 @@ public class GrowthStageController : ControllerBase
     /// <response code="500">Ошибка на стороне сервера.</response>
     [HttpGet]
     [Authorize(Roles = "Administrator,Employee")]
-    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(IEnumerable<GrowthStage>), Description = "Список стадий роста успешно получен.")]
+    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(IEnumerable<GrowthStageDTO>), Description = "Список стадий роста успешно получен.")]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "Некорректные параметры запроса.")]
     [SwaggerResponse(StatusCodes.Status401Unauthorized, "Пользователь не авторизован.")]
     [SwaggerResponse(StatusCodes.Status403Forbidden, "Недостаточно прав.")]
@@ -60,12 +62,12 @@ public class GrowthStageController : ControllerBase
                 {
                     return NotFound("Стадия роста с указанным названием не найдена");
                 }
-                return Ok(new List<GrowthStage> { growthStage });
+                return Ok(new List<GrowthStageDTO> { GrowthStageConverter.ToDTO(growthStage) });
             }
 
             // Если никакие фильтры не указаны - возвращаем все стадии роста
             var growthStages = await _growthStageService.GetAllGrowthStagesAsync();
-            return Ok(growthStages);
+            return Ok(GrowthStageConverter.ToDTO(growthStages));
         }
         catch (UnauthorizedAccessException e)
         {
@@ -101,7 +103,7 @@ public class GrowthStageController : ControllerBase
     /// <response code="500">Ошибка на стороне сервера.</response>
     [HttpGet("{id:guid}")]
     [Authorize(Roles = "Administrator,Employee")]
-    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(GrowthStage), Description = "Стадия роста успешно получена.")]
+    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(GrowthStageDTO), Description = "Стадия роста успешно получена.")]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "Некорректный идентификатор.")]
     [SwaggerResponse(StatusCodes.Status401Unauthorized, "Пользователь не авторизован.")]
     [SwaggerResponse(StatusCodes.Status403Forbidden, "Недостаточно прав.")]
@@ -132,7 +134,7 @@ public class GrowthStageController : ControllerBase
                 return NotFound("Стадия роста не найдена");
             }
 
-            return Ok(growthStage);
+            return Ok(GrowthStageConverter.ToDTO(growthStage));
         }
         catch (UnauthorizedAccessException e)
         {

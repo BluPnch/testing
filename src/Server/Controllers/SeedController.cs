@@ -3,6 +3,8 @@ using Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
+using Server.Controllers.Models;
+using Server.Controllers.Converters;
 
 namespace Server.Controllers;
 
@@ -32,7 +34,7 @@ public class SeedController : ControllerBase
     /// <response code="500">Ошибка на стороне сервера.</response>
     [HttpGet]
     [Authorize(Roles = "Administrator,Employee")]
-    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(IEnumerable<Seed>), Description = "Список семян успешно получен.")]
+    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(IEnumerable<SeedDTO>), Description = "Список семян успешно получен.")]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "Некорректные параметры запроса.")]
     [SwaggerResponse(StatusCodes.Status401Unauthorized, "Пользователь не авторизован.")]
     [SwaggerResponse(StatusCodes.Status403Forbidden, "Недостаточно прав.")]
@@ -61,7 +63,7 @@ public class SeedController : ControllerBase
                 {
                     return NotFound("Семена с указанной зрелостью не найдены");
                 }
-                return Ok(seeds);
+                return Ok(SeedConverter.ToDTO(seeds));
             }
 
             if (!string.IsNullOrEmpty(viability))
@@ -71,11 +73,11 @@ public class SeedController : ControllerBase
                 {
                     return NotFound("Семена с указанной жизнеспособностью не найдены");
                 }
-                return Ok(seeds);
+                return Ok(SeedConverter.ToDTO(seeds));
             }
 
             var allSeeds = await _seedService.GetAllSeedsAsync();
-            return Ok(allSeeds);
+            return Ok(SeedConverter.ToDTO(allSeeds));
         }
         catch (UnauthorizedAccessException e)
         {
@@ -111,7 +113,7 @@ public class SeedController : ControllerBase
     /// <response code="500">Ошибка на стороне сервера.</response>
     [HttpGet("{id:guid}")]
     [Authorize(Roles = "Administrator,Employee")]
-    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(Seed), Description = "Семя успешно получено.")]
+    [SwaggerResponse(StatusCodes.Status200OK, Type = typeof(SeedDTO), Description = "Семя успешно получено.")]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "Некорректный идентификатор.")]
     [SwaggerResponse(StatusCodes.Status401Unauthorized, "Пользователь не авторизован.")]
     [SwaggerResponse(StatusCodes.Status403Forbidden, "Недостаточно прав.")]
@@ -142,7 +144,7 @@ public class SeedController : ControllerBase
                 return NotFound("Семя не найдено");
             }
 
-            return Ok(seed);
+            return Ok(SeedConverter.ToDTO(seed));
         }
         catch (UnauthorizedAccessException e)
         {
@@ -177,12 +179,12 @@ public class SeedController : ControllerBase
     /// <response code="500">Ошибка на стороне сервера.</response>
     [HttpPost]
     [Authorize(Roles = "Administrator,Employee")]
-    [SwaggerResponse(StatusCodes.Status201Created, Type = typeof(Seed), Description = "Семя успешно создано.")]
+    [SwaggerResponse(StatusCodes.Status201Created, Type = typeof(SeedDTO), Description = "Семя успешно создано.")]
     [SwaggerResponse(StatusCodes.Status400BadRequest, "Некорректные данные семени.")]
     [SwaggerResponse(StatusCodes.Status401Unauthorized, "Пользователь не авторизован.")]
     [SwaggerResponse(StatusCodes.Status403Forbidden, "Недостаточно прав.")]
     [SwaggerResponse(StatusCodes.Status500InternalServerError, "Ошибка на стороне сервера.")]
-    public async Task<IActionResult> Create([FromBody] Seed seed)
+    public async Task<IActionResult> Create([FromBody] SeedDTO seedDto)
     {
         try
         {
@@ -196,8 +198,9 @@ public class SeedController : ControllerBase
                 return Forbid("Недостаточно прав для выполнения операции");
             }
 
+            var seed = SeedConverter.ToDomain(seedDto);
             var createdSeed = await _seedService.CreateSeedAsync(seed);
-            return CreatedAtAction(nameof(GetSeeds), new { id = createdSeed.Id }, createdSeed);
+            return CreatedAtAction(nameof(GetSeeds), new { id = createdSeed.Id }, SeedConverter.ToDTO(createdSeed));
         }
         catch (UnauthorizedAccessException e)
         {
@@ -230,7 +233,7 @@ public class SeedController : ControllerBase
     [SwaggerResponse(StatusCodes.Status403Forbidden, "Недостаточно прав.")]
     [SwaggerResponse(StatusCodes.Status404NotFound, "Семя не найдено.")]
     [SwaggerResponse(StatusCodes.Status500InternalServerError, "Ошибка на стороне сервера.")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] Seed seed)
+    public async Task<IActionResult> Update(Guid id, [FromBody] SeedDTO seedDto)
     {
         try
         {
@@ -244,9 +247,10 @@ public class SeedController : ControllerBase
                 return Forbid("Недостаточно прав для выполнения операции");
             }
 
-            if (id != seed.Id)
+            if (id != seedDto.Id)
                 return BadRequest("ID in URL does not match ID in request body");
 
+            var seed = SeedConverter.ToDomain(seedDto);
             await _seedService.UpdateSeedAsync(seed);
             return NoContent();
         }

@@ -3,6 +3,7 @@ using Domain.Interfaces.Services;
 using Domain.Models;
 using Application.Validators;
 using Domain.Models.Enums;
+using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -36,13 +37,17 @@ public class AdministratorService : IAdministratorService
     {
         _logger.LogInformation("Attempting to create administrator with username: {Username}", username);
 
+        // ДОБАВИТЬ ВАЛИДАЦИЮ
+        var administrator = new Administrator(id, surname, name, patronymic, phoneNumber, username);
+        await _administratorValidator.ValidateAndThrowAsync(administrator);
+
         var existingAdmin = await _administratorRepository.GetAdministratorByPhoneNumberAsync(phoneNumber);
         if (existingAdmin != null)
         {
             _logger.LogWarning("Administrator with phone number {PhoneNumber} already exists", phoneNumber);
             throw new InvalidOperationException("Администратор с таким номером телефона уже существует.");
         }
-        
+    
         if (await _authUserRepository.UsernameExistsAsync(username))
         {
             _logger.LogWarning("User with username {Username} already exists", username);
@@ -62,10 +67,10 @@ public class AdministratorService : IAdministratorService
             await _authUserRepository.CreateAsync(authUser);
             _logger.LogInformation("Created auth user for administrator with username: {Username}", username);
 
-            var administrator = await _administratorRepository.CreateAdministratorAsync(id, phoneNumber, surname, name, patronymic, username);
+            var result = await _administratorRepository.CreateAdministratorAsync(id, phoneNumber, surname, name, patronymic, username);
             _logger.LogInformation("Successfully created administrator with ID: {AdministratorId}", id);
-            
-            return administrator;
+        
+            return result;
         }
         catch (Exception ex)
         {
