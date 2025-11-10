@@ -3,13 +3,11 @@
 WORKDIR /src
 COPY . .
 
-RUN dotnet publish "src/LINQBenchmark.Runner/LINQBenchmark.Runner.csproj" \
+RUN dotnet publish "src/LINQBenchmark.Runner.net9/LINQBenchmark.Runner.net9.csproj" \
     -c Release \
-    -f net9.0 \
-    -o /app/publish \
-    -p:TargetFramework=net9.0
+    -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/runtime:9.0-alpine
 WORKDIR /app
 COPY --from=builder /app/publish .
-ENTRYPOINT ["dotnet", "LINQBenchmark.Runner.dll"]
+ENTRYPOINT ["dotnet", "LINQBenchmark.Runner.net9.dll"]

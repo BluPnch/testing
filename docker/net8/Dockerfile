@@ -5,9 +5,7 @@ COPY . .
 
 RUN dotnet publish "src/LINQBenchmark.Runner/LINQBenchmark.Runner.csproj" \
     -c Release \
-    -f net8.0 \
-    -o /app/publish \
-    -p:TargetFramework=net8.0
+    -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/runtime:8.0-alpine
 WORKDIR /app
