@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text.Json;
+﻿using System.Text.Json;
 using BenchmarkDotNet.Running;
-using LINQBenchmark.Benchmarks;
 using LINQBenchmark.net9.Benchmarks;
 
 
@@ -14,38 +9,65 @@ class Program
 {
     static void Main(string[] args)
     {
-        Console.WriteLine("=== LINQ Performance Benchmark (.NET 9) ===");
-        Console.WriteLine($"Running on .NET {Environment.Version}");
-        Console.WriteLine($"OS: {Environment.OSVersion}");
-        Console.WriteLine($"Processor Count: {Environment.ProcessorCount}");
-        Console.WriteLine();
+        try
+        {
+            Console.WriteLine("=== LINQ Performance Benchmark (.NET 9) ===");
+            Console.WriteLine($"Running on .NET {Environment.Version}");
+            Console.WriteLine($"OS: {Environment.OSVersion}");
+            Console.WriteLine($"Processor Count: {Environment.ProcessorCount}");
+            Console.WriteLine();
 
-        var results = new List<object>();
-        
-        // Запускаем CountBy benchmark
-        Console.WriteLine("Running CountBy benchmarks...");
-        var countBySummary = BenchmarkRunner.Run<CountByBenchmark>();
-        results.Add(new {
-            Benchmark = "CountBy",
-            Results = ProcessSummary(countBySummary)
-        });
+            var results = new List<object>();
+            
+            // Запускаем CountBy benchmark
+            Console.WriteLine("Running CountBy benchmarks...");
+            try
+            {
+                var countBySummary = BenchmarkRunner.Run<CountByBenchmark>();
+                results.Add(new {
+                    Benchmark = "CountBy",
+                    Results = ProcessSummary(countBySummary)
+                });
+                Console.WriteLine("✓ CountBy completed");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"✗ CountBy failed: {ex.Message}");
+            }
 
-        // Запускаем AggregateBy benchmark
-        Console.WriteLine("Running AggregateBy benchmarks...");
-        var aggregateBySummary = BenchmarkRunner.Run<AggregateByBenchmark>();
-        results.Add(new {
-            Benchmark = "AggregateBy", 
-            Results = ProcessSummary(aggregateBySummary)
-        });
+            // Запускаем AggregateBy benchmark
+            Console.WriteLine("Running AggregateBy benchmarks...");
+            try
+            {
+                var aggregateBySummary = BenchmarkRunner.Run<AggregateByBenchmark>();
+                results.Add(new {
+                    Benchmark = "AggregateBy", 
+                    Results = ProcessSummary(aggregateBySummary)
+                });
+                Console.WriteLine("✓ AggregateBy completed");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"✗ AggregateBy failed: {ex.Message}");
+            }
 
-        // Сохраняем результаты
-        SaveResults(results);
-        
-        Console.WriteLine("All benchmarks completed!");
+            // Сохраняем результаты
+            SaveResults(results);
+            
+            Console.WriteLine("All benchmarks completed!");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Fatal error: {ex}");
+            Environment.Exit(1);
+        }
     }
 
     static object ProcessSummary(BenchmarkDotNet.Reports.Summary summary)
     {
+        if (summary?.Reports == null)
+            return new { Error = "No reports generated" };
+
         return summary.Reports.Select(r => new
         {
             Method = r.BenchmarkCase.Descriptor.WorkloadMethod.Name,
@@ -58,7 +80,6 @@ class Program
             Gen2Collections = r.GcStats.Gen2Collections
         }).ToList();
     }
-
     
     static void SaveResults(List<object> results)
     {

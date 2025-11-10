@@ -1,8 +1,9 @@
-﻿using BenchmarkDotNet.Running;
-using LINQBenchmark.Benchmarks; 
-using System.Text.Json;
+﻿using System.Text.Json;
+using BenchmarkDotNet.Running;
+using LINQBenchmark.net8.Benchmarks;
 
-namespace LINQBenchmark.Runner;
+
+namespace LINQBenchmark.Runner.net8;
 
 class Program
 {

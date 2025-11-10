@@ -1,7 +1,11 @@
 ﻿/.idea
-src/LINQBenchmark/obj
-src/LINQBenchmark/bin
-src/LINQBenchmark.Runner/obj
-src/LINQBenchmark.Runner/bin
+src/LINQBenchmark.net8/obj
+src/LINQBenchmark.net8/bin
+src/LINQBenchmark.Runner.net8/obj
+src/LINQBenchmark.Runner.net8/bin
+src/LINQBenchmark.net9/obj
+src/LINQBenchmark.net9/bin
+src/LINQBenchmark.Runner.net9/obj
+src/LINQBenchmark.Runner.net9/bin
 *.log
 /results

@@ -1,6 +1,6 @@
 ﻿using BenchmarkDotNet.Attributes;
 
-namespace LINQBenchmark.net9.Benchmarks;
+namespace LINQBenchmark.net8.Benchmarks;
 
 public class AggregateByBenchmark : BaseBenchmark
 {
@@ -13,17 +13,6 @@ public class AggregateByBenchmark : BaseBenchmark
     }
 
     [Benchmark]
-    public Dictionary<string, decimal> AggregateBy_Net9()
-    {
-        return _testData
-            .AggregateBy(
-                keySelector: x => x.Category,
-                seed: 0m,
-                (total, item) => total + item.Value)
-            .ToDictionary(x => x.Key, x => x.Value);
-    }
-
-    [Benchmark]
     public Dictionary<string, decimal> AggregateBy_Aggregate()
     {
         return _testData
@@ -32,5 +21,14 @@ public class AggregateByBenchmark : BaseBenchmark
                 g => g.Key, 
                 g => g.Aggregate(0m, (total, item) => total + item.Value)
             );
+    }
+
+    [Benchmark]
+    public Dictionary<string, decimal> AggregateBy_Select()
+    {
+        return _testData
+            .GroupBy(x => x.Category)
+            .Select(g => new { Key = g.Key, Sum = g.Sum(x => x.Value) })
+            .ToDictionary(x => x.Key, x => x.Sum);
     }
 }
