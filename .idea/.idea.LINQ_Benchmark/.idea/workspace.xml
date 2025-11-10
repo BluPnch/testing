@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="c80cc36d-faa9-4dd0-92d9-12edd9b1711b" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/LINQBenchmark/Benchmarks/AggregateByBenchmark.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/LINQBenchmark/Benchmarks/BaseBenchmark.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/LINQBenchmark/Benchmarks/CountByBenchmark.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/LINQBenchmark/Helpers/DataGenerator.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/LINQBenchmark/LINQBenchmark.Runner/LINQBenchmark.Runner.csproj" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/LINQBenchmark/Models/TestData.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.github/workflows/ci.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitlab-ci.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitlab/setup-environment.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Diagrams/DB.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Diagrams/ER.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Diagrams/Upper.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Diagrams/admin.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Diagrams/auth.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Diagrams/bpmn1.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Diagrams/bpmn2.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Diagrams/client.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Diagrams/employee.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Diagrams/use-case.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Diagrams/диаграммы ппо.drawio" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Dockerfile.test" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/allure-results/e2e-tests.trx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/allure-results/integration-tests.trx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/allure-results/unit-tests.trx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose.test.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/global.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/.env" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/check-db.ps1" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/clean-integration-tests.ps1" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/init-db.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/init-test-db.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/reset.ps1" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/run-e2e-tests.ps1" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/run_tests.ps1" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/start-postgres.ps1" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/start-postgresql.ps1" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/start-servers.ps1" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/test-local.ps1" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Application/Application.csproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Application/Services/AdministratorService.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Application/Services/AuthService.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Application/Services/ClientService.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Application/Services/EmployeeService.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Application/Services/GrowthStageService.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Application/Services/JournalRecordService.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Application/Services/PlantService.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Application/Services/SeedService.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Application/Validators/AdministratorValidator.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Application/Validators/AuthUserValidator.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Application/Validators/ClientValidator.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Application/Validators/EmployeeValidator.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Application/Validators/GrowthStageValidator.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Application/Validators/JournalRecordValidator.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Application/Validators/PlantValidator.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Application/Validators/SeedValidator.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataAccess/Context/Configuration/AdministratorDbConfiguration.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataAccess/Context/Configuration/AuthUserDbConfiguration.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataAccess/Context/Configuration/ClientDbConfiguration.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataAccess/Context/Configuration/EmployeeDbConfiguration.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataAccess/Context/Configuration/EmployeePlantDbConfiguration.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataAccess/Context/Configuration/GrowthStageDbConfiguration.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataAccess/Context/Configuration/JournalRecordDbConfiguration.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataAccess/Context/Configuration/PlantDbConfiguration.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataAccess/Context/Configuration/SeedDbConfiguration.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataAccess/Context/DbInitializer.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataAccess/Context/GreenhouseContext.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataAccess/DataAccess.csproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataAccess/Models/AdministratorDb.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataAccess/Models/AuthUserDb.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataAccess/Models/ClientDb.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataAccess/Models/Converters/AdministratorConverter.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataAccess/Models/Converters/ClientConverter.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataAccess/Models/Converters/EmployeeConverter.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataAccess/Models/Converters/GrowthStageConverter.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataAccess/Models/Converters/JournalRecordConverter.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataAccess/Models/Converters/PlantConverter.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataAccess/Models/Converters/SeedConverter.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataAccess/Models/EmployeeDb.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataAccess/Models/EmployeePlantDb.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataAccess/Models/GrowthStageDb.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataAccess/Models/JournalRecordDb.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataAccess/Models/PlantDb.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataAccess/Models/SeedDb.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataAccess/Repositories/AdministratorRepository.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataAccess/Repositories/AuthUserRepository.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataAccess/Repositories/ClientRepository.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataAccess/Repositories/EmployeeRepository.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataAccess/Repositories/GrowthStageRepository.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataAccess/Repositories/JournalRecordRepository.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataAccess/Repositories/PlantRepository.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/DataAccess/Repositories/SeedRepository.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Domain.csproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Exceptions/AdministratorNotFoundException.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Exceptions/ClientNotFoundException.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Exceptions/EmployeeNotFoundException.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Exceptions/GreenhouseException.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Exceptions/GrowthStageNotFoundException.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Exceptions/JournalRecordNotFoundException.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Exceptions/PlantNotFoundException.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Exceptions/SeedNotFoundException.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Interfaces/Repositories/IAdministratorRepository.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Interfaces/Repositories/IAuthUserRepository.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Interfaces/Repositories/IClientRepository.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Interfaces/Repositories/IEmployeeRepository.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Interfaces/Repositories/IGrowthStageRepository.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Interfaces/Repositories/IJournalRecordRepository.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Interfaces/Repositories/IPlantRepository.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Interfaces/Repositories/ISeedRepository.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Interfaces/Services/IAdministratorService.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Interfaces/Services/IAuthService.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Interfaces/Services/IClientService.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Interfaces/Services/IEmployeeService.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Interfaces/Services/IGrowthStageService.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Interfaces/Services/IJournalRecordService.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Interfaces/Services/IPlantService.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Interfaces/Services/ISeedService.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Models/Administrator.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Models/AuthUser.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Models/BaseModel.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Models/Client.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Models/Employee.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Models/Enums/EnumAuth.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Models/Enums/EnumCondition.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Models/Enums/EnumFlower.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Models/Enums/EnumFruit.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Models/Enums/EnumLight.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Models/Enums/EnumPlantDomain.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Models/Enums/EnumReproduction.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Models/Enums/EnumViability.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Models/GrowthStage.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Models/JournalRecord.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Models/Plant.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Models/Seed.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Models/Staff.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Domain/Models/User.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/E2ETests/AdminDemoE2ETests.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/E2ETests/E2ETests.csproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/E2ETests/GreenhouseWebApplicationFactory.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/E2ETests/allureConfig.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Greenhouse.sln" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/IntegrationTests/AuthAndPlantsApiTests.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/IntegrationTests/IntegrationTests.csproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/IntegrationTests/Properties/AssemblyInfo.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/IntegrationTests/allureConfig.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Controllers/AdministratorController.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Controllers/AuthController.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Controllers/ClientController.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Controllers/Converters/AdministratorConverter.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Controllers/Converters/AuthUserConverter.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Controllers/Converters/ClientConverter.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Controllers/Converters/EmployeeConverter.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Controllers/Converters/GrowthStageConverter.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Controllers/Converters/JournalRecordConverter.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Controllers/Converters/PlantConverter.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Controllers/Converters/SeedConverter.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Controllers/EmployeeController.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Controllers/GrowthStageController.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Controllers/JournalRecordController.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Controllers/Models/AdministratorDTO.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Controllers/Models/AuthUserDTO.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Controllers/Models/BaseModelDTO.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Controllers/Models/ClientDTO.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Controllers/Models/CreateAdministratorRequestDTO.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Controllers/Models/EmployeeDTO.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Controllers/Models/Enums/EnumAuthDTO.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Controllers/Models/Enums/EnumConditionDTO.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Controllers/Models/Enums/EnumFlowerDTO.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Controllers/Models/Enums/EnumFruitDTO.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Controllers/Models/Enums/EnumLightDTO.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Controllers/Models/Enums/EnumPlantDomainDTO.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Controllers/Models/Enums/EnumReproductionDTO.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Controllers/Models/Enums/EnumViabilityDTO.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Controllers/Models/GrowthStageDTO.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Controllers/Models/JournalRecordDTO.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Controllers/Models/LoginRequestDTO.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Controllers/Models/LoginResponseDTO.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Controllers/Models/PlantDTO.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Controllers/Models/RegisterRequestDTO.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Controllers/Models/SeedDTO.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Controllers/Models/StaffDTO.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Controllers/Models/UpdateUserRoleRequestDTO.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Controllers/Models/UserDTO.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Controllers/PlantController.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Controllers/SeedController.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Controllers/UserController.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Extensions/UserExtension.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Program.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Properties/launchSettings.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Server.csproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/Server.http" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/appsettings.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Server/logs/app20250515.log~" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UnitTests/Builder/AdministratorBuilder.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UnitTests/Builder/AdministratorDbBuilder.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UnitTests/Builder/AuthUserBuilder.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UnitTests/Builder/ClientBuilder.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UnitTests/Builder/ClientDbBuilder.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UnitTests/Builder/EmployeeBuilder.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UnitTests/Builder/EmployeeDbBuilder.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UnitTests/Builder/GrowthStageBuilder.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UnitTests/Builder/GrowthStageDbBuilder.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UnitTests/Builder/JournalRecordBuilder.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UnitTests/Builder/JournalRecordDbBuilder.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UnitTests/Builder/PlantBuilder.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UnitTests/Builder/PlantDbBuilder.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UnitTests/Builder/SeedBuilder.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UnitTests/Builder/SeedDbBuilder.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UnitTests/ObjectMother/AdministratorObjectMother.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UnitTests/ObjectMother/ClientObjectMother.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UnitTests/ObjectMother/EmployeeObjectMother.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UnitTests/ObjectMother/GrowthStageObjectMother.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UnitTests/ObjectMother/JournalRecordObjectMother.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UnitTests/ObjectMother/PlantObjectMother.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UnitTests/ObjectMother/SeedObjectMother.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UnitTests/TestRepositories/RepositoryTestFixture.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UnitTests/TestRepositories/TestAdministratorRepository.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UnitTests/TestRepositories/TestClientRepository.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UnitTests/TestRepositories/TestEmployeeRepository.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UnitTests/TestRepositories/TestGrowthStageRepository.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UnitTests/TestRepositories/TestJournalRecordRepository.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UnitTests/TestRepositories/TestPlantRepository.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UnitTests/TestRepositories/TestSeedRepository.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UnitTests/TestServices/TestAdministratorService.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UnitTests/TestServices/TestClientService.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UnitTests/TestServices/TestEmployeeService.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UnitTests/TestServices/TestGrowthStageService.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UnitTests/TestServices/TestJournalRecordService.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UnitTests/TestServices/TestPlantService.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UnitTests/TestServices/TestSeedService.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UnitTests/UnitTests.csproj" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/UnitTests/allureConfig.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Web/App.xaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Web/App.xaml.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Web/AssemblyInfo.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Web/Commands/RelayCommand.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Web/Converters/BoolToTextConverter.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Web/MainWindow.xaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Web/MainWindow.xaml.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Web/ViewModels/BaseViewModel.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Web/ViewModels/MainViewModel.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/global.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/server.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test-results/all-tests.trx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test-results/e2e-tests.trx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test-results/integration-tests.trx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test-results/unit-tests.trx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/e2e/auth.test.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/e2e/jest.config.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/e2e/package.json" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "BluPnch"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/BluPnch/testing.git",
+    "accountId": "6de0dcb8-0f80-463f-a96b-e9aaf4a642ce"
+  }
+}]]></component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/src/LINQBenchmark/Benchmarks/AggregateByBenchmark.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/LINQBenchmark/Benchmarks/BaseBenchmark.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/LINQBenchmark/Benchmarks/CountByBenchmark.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/LINQBenchmark/Helpers/DataGenerator.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/LINQBenchmark/Models/TestData.cs" root0="SKIP_HIGHLIGHTING" />
+  </component>
+  <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 5
+}]]></component>
+  <component name="ProjectId" id="35ITGk1ddnEuDg26UaGIsnehb5L" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "lab3",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
+  },
+  "keyToStringList": {
+    "rider.external.source.directories": [
+      "C:\\Users\\varya\\AppData\\Roaming\\JetBrains\\Rider2024.1\\resharper-host\\DecompilerCache",
+      "C:\\Users\\varya\\AppData\\Roaming\\JetBrains\\Rider2024.1\\resharper-host\\SourcesCache",
+      "C:\\Users\\varya\\AppData\\Local\\Symbols\\src"
+    ]
+  }
+}]]></component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="c80cc36d-faa9-4dd0-92d9-12edd9b1711b" name="Changes" comment="" />
+      <created>1762796493326</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1762796493326</updated>
+      <workItem from="1762796495882" duration="299000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="UnityCheckinConfiguration" checkUnsavedScenes="true" />
+  <component name="UnityProjectConfiguration" hasMinimizedUI="false" />
+  <component name="VcsManagerConfiguration">
+    <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
+  </component>
+</project>
