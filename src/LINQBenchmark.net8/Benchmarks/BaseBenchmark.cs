@@ -5,8 +5,9 @@ using LINQBenchmark.Models;
 
 namespace LINQBenchmark.net8.Benchmarks;
 
-[SimpleJob(RuntimeMoniker.Net80)]
+[SimpleJob(RuntimeMoniker.Net80, baseline: true)]
 [MemoryDiagnoser]
+[MinColumn, MaxColumn, MeanColumn, MedianColumn]
 public abstract class BaseBenchmark
 {
     protected const int DataSize = 10000;
@@ -23,5 +24,6 @@ public abstract class BaseBenchmark
     public void Cleanup()
     {
         _testData = null;
+        GC.Collect();
     }
 }

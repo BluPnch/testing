@@ -2,10 +2,9 @@
 
     <PropertyGroup>
         <TargetFramework>net9.0</TargetFramework>
-        <OutputType>Library</OutputType>
+        <OutputType>Library</OutputType>  <!-- Library, а не Exe -->
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <DefineConstants>NET9_0</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup>

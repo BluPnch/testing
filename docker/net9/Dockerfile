@@ -3,13 +3,13 @@
 WORKDIR /src
 COPY . .
 
-# Собираем NET9 версию
 RUN dotnet publish "src/LINQBenchmark.Runner.net9/LINQBenchmark.Runner.net9.csproj" \
     -c Release \
-    -o /app/publish
+    -o /app/publish \
+    --self-contained true \
+    -r linux-musl-x64
 
-# Используем SDK образ вместо runtime
-FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine
+FROM mcr.microsoft.com/dotnet/runtime:9.0-alpine
 WORKDIR /app
 COPY --from=builder /app/publish .
-ENTRYPOINT ["dotnet", "LINQBenchmark.Runner.net9.dll"]
+ENTRYPOINT ["./LINQBenchmark.Runner.net9"]  <!-- Обновить имя файла -->

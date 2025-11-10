@@ -2,17 +2,18 @@
 
     <PropertyGroup>
         <TargetFramework>net9.0</TargetFramework>
-        <OutputType>Library</OutputType>
-        <Nullable>enable</Nullable>
+        <OutputType>Exe</OutputType>  <!-- Exe -->
         <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AssemblyName>LINQBenchmark.Runner.net9</AssemblyName>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="BenchmarkDotNet" Version="0.14.0" />
+        <ProjectReference Include="..\LINQBenchmark.net9\LINQBenchmark.net9.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\LINQBenchmark.net9\LINQBenchmark.net9.csproj" />
+        <PackageReference Include="BenchmarkDotNet" Version="0.14.0" />
     </ItemGroup>
 
 </Project>

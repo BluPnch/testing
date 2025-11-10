@@ -3,13 +3,13 @@
 WORKDIR /src
 COPY . .
 
-# Собираем NET8 версию
 RUN dotnet publish "src/LINQBenchmark.Runner.net8/LINQBenchmark.Runner.net8.csproj" \
     -c Release \
-    -o /app/publish
+    -o /app/publish \
+    --self-contained true \
+    -r linux-musl-x64
 
-# Используем SDK образ вместо runtime
-FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine
+FROM mcr.microsoft.com/dotnet/runtime:8.0-alpine
 WORKDIR /app
 COPY --from=builder /app/publish .
-ENTRYPOINT ["dotnet", "LINQBenchmark.Runner.net8.dll"]
+ENTRYPOINT ["./LINQBenchmark.Runner.net8"]  <!-- Обновить имя файла -->
