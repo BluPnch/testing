@@ -30,3 +30,24 @@ Remove-Item -Recurse -Force results -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Path results -Force
 ->
 C:\sem7\testing\scripts\run-benchmarks.ps1
+
+
+
+
+# Запуск всей системы с мониторингом
+.\scripts\run-benchmarks.ps1 -WithMonitoring $true
+# Проверка статуса контейнеров
+.\scripts\check-health.ps1
+# Запуск только мониторинга
+.\scripts\start-monitoring.ps1
+# Запуск только бэнчмарка
+.\scripts\run-benchmarks.ps1 -Target net8 -WithMonitoring $false
+
+
+# ! Остановить все!
+docker-compose down
+
+.\scripts\start-monitoring.ps1
+start http://localhost:3001
+[//]: # (Другое окно)
+.\scripts\run-benchmarks.ps1 -Target net8 -WithMonitoring $false

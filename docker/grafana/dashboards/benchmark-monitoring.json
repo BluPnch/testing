@@ -1,0 +1,133 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "LINQ Benchmark Monitoring",
+    "tags": ["benchmark", "performance"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "CPU Usage - Benchmark Containers",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "rate(container_cpu_user_seconds_total{container=~\"linq-net.*\"}[5m]) * 100",
+            "legendFormat": "{{container}} - CPU %"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "Memory Usage - Benchmark Containers",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "container_memory_usage_bytes{container=~\"linq-net.*\"} / 1024 / 1024",
+            "legendFormat": "{{container}} - Memory MB"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+        "fieldConfig": {
+          "defaults": {
+            "unit": "MB",
+            "min": 0
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "Network I/O",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "rate(container_network_receive_bytes_total{container=~\"linq-net.*\"}[5m])",
+            "legendFormat": "{{container}} - Receive"
+          },
+          {
+            "expr": "rate(container_network_transmit_bytes_total{container=~\"linq-net.*\"}[5m])",
+            "legendFormat": "{{container}} - Transmit"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+        "fieldConfig": {
+          "defaults": {
+            "unit": "Bps"
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "Disk I/O",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "rate(container_fs_reads_bytes_total{container=~\"linq-net.*\"}[5m])",
+            "legendFormat": "{{container}} - Read"
+          },
+          {
+            "expr": "rate(container_fs_writes_bytes_total{container=~\"linq-net.*\"}[5m])",
+            "legendFormat": "{{container}} - Write"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+        "fieldConfig": {
+          "defaults": {
+            "unit": "Bps"
+          }
+        }
+      },
+      {
+        "id": 5,
+        "title": "GC Collections",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "container_memory_failures_total{container=~\"linq-net.*\", scope=\"container\"}",
+            "legendFormat": "{{container}} - GC Collections"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short"
+          }
+        }
+      },
+      {
+        "id": 6,
+        "title": "Container Restarts",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "changes(container_start_time_seconds{container=~\"linq-net.*\"}[1h])",
+            "legendFormat": "Restarts"
+          }
+        ],
+        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 24},
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "red", "value": 1}
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "refresh": "5s"
+  }
+}
