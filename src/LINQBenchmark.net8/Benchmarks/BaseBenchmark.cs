@@ -16,5 +16,12 @@ public abstract class BaseBenchmark
     public void Setup()
     {
         _testData = DataGenerator.GenerateTestData(DataSize);
+        Console.WriteLine($"Generated {_testData.Length} test items");
+    }
+
+    [GlobalCleanup]
+    public void Cleanup()
+    {
+        _testData = null;
     }
 }
