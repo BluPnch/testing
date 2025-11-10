@@ -1,0 +1,49 @@
+﻿services:
+  benchmark-net8:
+    build:
+      context: .
+      dockerfile: docker/net8/Dockerfile
+    container_name: linq-net8
+    cpus: 1
+    mem_limit: 512MB
+    networks: [bench]
+    volumes:
+      - ./results:/app/results
+
+  benchmark-net9:
+    build:
+      context: .
+      dockerfile: docker/net9/Dockerfile
+    container_name: linq-net9
+    cpus: 1
+    mem_limit: 512MB
+    networks: [bench]
+    volumes:
+      - ./results:/app/results
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    ports:
+      - "8089:8080"
+    networks: [bench]
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk:/dev/disk:ro
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    volumes:
+      - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    networks: [bench]
+
+networks:
+  bench: {}
