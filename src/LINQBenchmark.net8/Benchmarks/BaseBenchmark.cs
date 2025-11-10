@@ -10,7 +10,7 @@ namespace LINQBenchmark.net8.Benchmarks;
 [MinColumn, MaxColumn, MeanColumn, MedianColumn]
 public abstract class BaseBenchmark
 {
-    protected const int DataSize = 10000;
+    protected const int DataSize = 100;
     protected TestData[] _testData = null!;
 
     [GlobalSetup]

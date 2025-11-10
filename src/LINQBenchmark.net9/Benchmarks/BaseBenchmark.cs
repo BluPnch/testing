@@ -9,7 +9,7 @@ namespace LINQBenchmark.net9.Benchmarks;
 [MemoryDiagnoser]
 public abstract class BaseBenchmark
 {
-    protected const int DataSize = 10000;
+    protected const int DataSize = 100;
     protected TestData[] _testData = null!;
 
     [GlobalSetup]
