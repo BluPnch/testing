@@ -14,10 +14,12 @@ scrape_configs:
 
   - job_name: 'benchmark-net8'
     static_configs:
-      - targets: ['benchmark-net8:8081']
+      - targets: ['benchmark-net8:8080']  # ✅ Исправлено с 8081 на 8080
     scrape_interval: 10s
+    metrics_path: /metrics  # ✅ Добавлен путь к метрикам
 
   - job_name: 'benchmark-net9'
     static_configs:
-      - targets: ['benchmark-net9:8082']
+      - targets: ['benchmark-net9:8080']  # ✅ Исправлено с 8082 на 8080
     scrape_interval: 10s
+    metrics_path: /metrics  # ✅ Добавлен путь к метрикам
