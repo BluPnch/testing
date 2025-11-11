@@ -14,4 +14,5 @@ RUN mkdir -p /app/results
 COPY --from=builder /app/publish .
 COPY --from=builder /src ./src
 
+# ПРОСТАЯ КОМАНДА
 ENTRYPOINT ["dotnet", "LINQBenchmark.Runner.net8.dll"]

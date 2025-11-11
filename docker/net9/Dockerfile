@@ -14,4 +14,5 @@ RUN mkdir -p /app/results
 COPY --from=builder /app/publish .
 COPY --from=builder /src ./src
 
+# ПРОСТАЯ КОМАНДА - убрать dotnet-counters
 ENTRYPOINT ["dotnet", "LINQBenchmark.Runner.net9.dll"]

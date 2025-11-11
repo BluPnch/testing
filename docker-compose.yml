@@ -5,13 +5,14 @@
       dockerfile: docker/net8/Dockerfile
     image: bench/linq-net8:latest
     container_name: linq-net8
-    ports:
-      - "8081:8081"
-    networks: [bench]
+    networks: [ bench ]
     volumes:
       - ./results:/app/results
     restart: no
-    command: ["tail", "-f", "/dev/null"]
+    environment:
+      - DOTNET_EnableEventLog=1
+      - DOTNET_GCHeapHardLimit=0x10000000
+      - COMPlus_EnableEventLog=1
 
   benchmark-net9:
     build:
@@ -19,14 +20,16 @@
       dockerfile: docker/net9/Dockerfile
     image: bench/linq-net9:latest
     container_name: linq-net9
-    ports:
-      - "8082:8082"
-    networks: [bench]
+    networks: [ bench ]
     volumes:
       - ./results:/app/results
     restart: no
-    command: ["tail", "-f", "/dev/null"]
-
+    environment:
+      - DOTNET_EnableEventLog=1
+      - DOTNET_GCHeapHardLimit=0x10000000
+      - COMPlus_EnableEventLog=1
+        
+        
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
     container_name: cadvisor

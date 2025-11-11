@@ -1,6 +1,7 @@
-﻿using BenchmarkDotNet.Running;
+﻿using System.Text.Json;
+using BenchmarkDotNet.Running;
 using LINQBenchmark.net9.Benchmarks;
-using System.Text.Json;
+
 
 namespace LINQBenchmark.Runner.net9;
 
@@ -10,15 +11,12 @@ class Program
     {
         try
         {
-            Console.WriteLine("=== LINQ Performance Benchmark in Docker ===");
+            Console.WriteLine("=== LINQ Performance Benchmark .NET 8 ===");
             Console.WriteLine($"Running on .NET {Environment.Version}");
-            Console.WriteLine($"OS: {Environment.OSVersion}");
-            Console.WriteLine($"Processor Count: {Environment.ProcessorCount}");
-            Console.WriteLine();
-
+            
             var results = new List<object>();
 
-            // Run CountBy benchmarks
+            // CountBy benchmarks
             Console.WriteLine("Running CountBy benchmarks...");
             var countBySummary = BenchmarkRunner.Run<CountByBenchmark>();
             results.Add(new {
@@ -27,7 +25,7 @@ class Program
                 Timestamp = DateTime.UtcNow
             });
 
-            // Run AggregateBy benchmarks
+            // AggregateBy benchmarks  
             Console.WriteLine("Running AggregateBy benchmarks...");
             var aggregateBySummary = BenchmarkRunner.Run<AggregateByBenchmark>();
             results.Add(new {
@@ -36,15 +34,15 @@ class Program
                 Timestamp = DateTime.UtcNow
             });
 
-            // Save results to file
             SaveResults(results);
-            
             Console.WriteLine("All benchmarks completed!");
+            
+            // Ждем чтобы cAdvisor собрал финальные метрики
+            Thread.Sleep(30000);
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error: {ex}");
-            // Still exit with success to continue iterations
         }
     }
 

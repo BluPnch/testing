@@ -3,15 +3,6 @@ wsl --shutdown
 net stop com.docker.service
 net start com.docker.service
 
-# Остановить текущие контейнеры
-docker-compose down
-# Пересобрать с исправленными Dockerfile
-docker-compose build --no-cache
-# Запустить заново
-docker-compose up -d
-# Проверить логи
-docker-compose logs -f benchmark-net8
-
 
 # Очистить логи контейнера linq-net8
 docker-compose logs --tail=0 benchmark-net8
@@ -31,7 +22,8 @@ New-Item -ItemType Directory -Path results -Force
 ->
 C:\sem7\testing\scripts\run-benchmarks.ps1
 
-
+# Пересобрать контейнеры с выводом логов
+docker-compose build --no-cache --progress=plain
 
 
 # Запуск всей системы с мониторингом
@@ -54,3 +46,27 @@ start http://localhost:3001
 
 # Запустить всё
 docker-compose up -d
+
+
+PS C:\sem7\testing> docker-compose ps
+NAME         IMAGE                             COMMAND                   SERVICE          CREATED          STATUS                    PORTS
+cadvisor     gcr.io/cadvisor/cadvisor:latest   "/usr/bin/cadvisor -…"    cadvisor         45 seconds ago   Up 44 seconds (healthy)   0.0.0.0:8089->8080/tcp
+grafana      grafana/grafana:latest            "/run.sh"                 grafana          45 seconds ago   Up 40 seconds             0.0.0.0:3001->3000/tcp
+linq-net8    bench/linq-net8:latest            "/bin/sh -c 'sh -c \"…"   benchmark-net8   45 seconds ago   Up 44 seconds             0.0.0.0:8081->8081/tcp
+linq-net9    bench/linq-net9:latest            "dotnet LINQBenchmar…"    benchmark-net9   45 seconds ago   Up 44 seconds             0.0.0.0:8082->8082/tcp
+prometheus   prom/prometheus:latest            "/bin/prometheus --c…"    prometheus       45 seconds ago   Up 41 seconds             0.0.0.0:9090->9090/tcp
+
+
+
+
+
+# Память процесса
+container_memory_usage_bytes{container=~"linq-net.*"}
+# Аллокации памяти (через GC)
+rate(container_memory_failures_total{container=~"linq-net.*"}[5m])
+# Размер heap
+container_memory_working_set_bytes{container=~"linq-net.*"}
+
+# Количество сборок GC по поколениям
+rate(container_memory_failures_total{container=~"linq-net.*", scope="container"}[5m])
+
