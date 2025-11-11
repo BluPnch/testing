@@ -51,3 +51,6 @@ docker-compose down
 start http://localhost:3001
 [//]: # (Другое окно)
 .\scripts\run-benchmarks.ps1 -Target net8 -WithMonitoring $false
+
+# Запустить всё
+docker-compose up -d

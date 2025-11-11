@@ -19,7 +19,7 @@ docker-compose build --no-cache
 
 if ($Target -eq "all" -or $Target -eq "net8") {
     Write-Host "`nRunning .NET 8 benchmarks..." -ForegroundColor Yellow
-    docker-compose run --rm benchmark-net8
+    docker-compose exec benchmark-net8 dotnet run --project Benchmarks
 }
 
 if ($Target -eq "all" -or $Target -eq "net9") {

@@ -1,16 +1,25 @@
-﻿using BenchmarkDotNet.Attributes;
+﻿using System.Diagnostics.Metrics;
+using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Jobs;
 using LINQBenchmark.Helpers;
 using LINQBenchmark.Models;
 
 namespace LINQBenchmark.net9.Benchmarks;
 
-[SimpleJob(RuntimeMoniker.Net90)]
+[SimpleJob(RuntimeMoniker.Net90, baseline: true)]
+
 [MemoryDiagnoser]
+[MinColumn, MaxColumn, MeanColumn, MedianColumn]
 public abstract class BaseBenchmark
 {
     protected const int DataSize = 100;
     protected TestData[] _testData = null!;
+    
+    // Метрики для сбора
+    protected static readonly Meter Meter = new("LINQBenchmark");
+    protected static readonly Counter<int> CollectionPassesCounter = Meter.CreateCounter<int>("collection_passes");
+    protected static readonly Counter<long> MemoryAllocationsCounter = Meter.CreateCounter<long>("memory_allocations");
+    protected static readonly Counter<int> AllocationsCountCounter = Meter.CreateCounter<int>("allocations_count");
 
     [GlobalSetup]
     public void Setup()

@@ -5,10 +5,13 @@
       dockerfile: docker/net8/Dockerfile
     image: bench/linq-net8:latest
     container_name: linq-net8
+    ports:
+      - "8081:8081"
     networks: [bench]
     volumes:
       - ./results:/app/results
-    restart: unless-stopped
+    restart: no
+    command: ["tail", "-f", "/dev/null"]
 
   benchmark-net9:
     build:
@@ -16,10 +19,13 @@
       dockerfile: docker/net9/Dockerfile
     image: bench/linq-net9:latest
     container_name: linq-net9
+    ports:
+      - "8082:8082"
     networks: [bench]
     volumes:
       - ./results:/app/results
-    restart: unless-stopped
+    restart: no
+    command: ["tail", "-f", "/dev/null"]
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
@@ -34,9 +40,6 @@
       - /var/lib/docker/:/var/lib/docker:ro
       - /dev/disk:/dev/disk:ro
     restart: unless-stopped
-    depends_on:
-      - benchmark-net8
-      - benchmark-net9
 
   prometheus:
     image: prom/prometheus:latest
@@ -67,10 +70,11 @@
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
-      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_USERS_ALLOW_SIGN_UP=false  
     restart: unless-stopped
     depends_on:
       - prometheus
+    
 
 networks:
   bench:
@@ -79,3 +83,4 @@ networks:
 volumes:
   prometheus_data:
   grafana_data:
+    

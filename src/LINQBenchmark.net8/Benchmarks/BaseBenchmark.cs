@@ -3,6 +3,9 @@ using BenchmarkDotNet.Jobs;
 using LINQBenchmark.Helpers;
 using LINQBenchmark.Models;
 
+using System.Diagnostics;
+using System.Diagnostics.Metrics;
+
 namespace LINQBenchmark.net8.Benchmarks;
 
 [SimpleJob(RuntimeMoniker.Net80, baseline: true)]
@@ -12,18 +15,16 @@ public abstract class BaseBenchmark
 {
     protected const int DataSize = 100;
     protected TestData[] _testData = null!;
+    
+    // Метрики для сбора
+    protected static readonly Meter Meter = new("LINQBenchmark");
+    protected static readonly Counter<int> CollectionPassesCounter = Meter.CreateCounter<int>("collection_passes");
+    protected static readonly Counter<long> MemoryAllocationsCounter = Meter.CreateCounter<long>("memory_allocations");
+    protected static readonly Counter<int> AllocationsCountCounter = Meter.CreateCounter<int>("allocations_count");
 
     [GlobalSetup]
     public void Setup()
     {
         _testData = DataGenerator.GenerateTestData(DataSize);
-        Console.WriteLine($"Generated {_testData.Length} test items");
-    }
-
-    [GlobalCleanup]
-    public void Cleanup()
-    {
-        _testData = null;
-        GC.Collect();
     }
 }

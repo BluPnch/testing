@@ -14,10 +14,10 @@ scrape_configs:
 
   - job_name: 'benchmark-net8'
     static_configs:
-      - targets: ['benchmark-net8:80']
+      - targets: ['benchmark-net8:8081']
     scrape_interval: 10s
 
   - job_name: 'benchmark-net9'
     static_configs:
-      - targets: ['benchmark-net9:80']
+      - targets: ['benchmark-net9:8082']
     scrape_interval: 10s
