@@ -83,3 +83,14 @@ rate(container_memory_failures_total{container="linq-net8"}[5m]) - rate(containe
 .\scripts\run-benchmarks.ps1
 # Все последующие
 .\scripts\run-benchmarks.ps1 -Fast $true
+
+Количество созданных энумераторов
+linq_enumerator_creations_total
+Количество операций MoveNext (обходы коллекции)
+linq_move_next_operations_total
+Выделенная память (байты)
+linq_memory_allocated_bytes_total
+Время выполнения (миллисекунды)
+linq_execution_duration_ms_bucket
+Количество вызовов методов
+linq_method_invocations_total
