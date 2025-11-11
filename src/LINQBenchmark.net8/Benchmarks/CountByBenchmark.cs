@@ -1,6 +1,6 @@
-﻿using System.Diagnostics;
-using System.Diagnostics.Metrics;
-using BenchmarkDotNet.Attributes;
+﻿using BenchmarkDotNet.Attributes;
+using LINQBenchmark.Helpers;
+using LINQBenchmark.Models;
 
 
 namespace LINQBenchmark.net8.Benchmarks;
@@ -10,50 +10,45 @@ public class CountByBenchmark : BaseBenchmark
     [Benchmark(Baseline = true)]
     public Dictionary<string, int> CountBy_GroupBy()
     {
-        // Считаем обходы коллекции
-        CollectionPassesCounter.Add(2); // GroupBy + ToDictionary
+        CountingEnumerable<TestData>.ResetCounters();
+        var countingData = new CountingEnumerable<TestData>(_testData);
         
-        var result = _testData
+        var result = countingData
             .GroupBy(x => x.Category)
             .ToDictionary(g => g.Key, g => g.Count());
             
-        // Считаем аллокации
-        MemoryAllocationsCounter.Add(GC.GetTotalAllocatedBytes(true));
-        AllocationsCountCounter.Add(1);
-        
+        LogCollectionPasses("CountBy_GroupBy", CountingEnumerable<TestData>.EnumeratorCount);
         return result;
     }
 
     [Benchmark]
     public Dictionary<string, int> CountBy_ToLookup()
     {
-        CollectionPassesCounter.Add(2); // ToLookup + ToDictionary
+        CountingEnumerable<TestData>.ResetCounters();
+        var countingData = new CountingEnumerable<TestData>(_testData);
         
-        var result = _testData
+        var result = countingData
             .ToLookup(x => x.Category)
             .ToDictionary(g => g.Key, g => g.Count());
             
-        MemoryAllocationsCounter.Add(GC.GetTotalAllocatedBytes(true));
-        AllocationsCountCounter.Add(1);
-        
+        LogCollectionPasses("CountBy_ToLookup", CountingEnumerable<TestData>.EnumeratorCount);
         return result;
     }
 
     [Benchmark]
     public Dictionary<string, int> CountBy_Manual()
     {
-        CollectionPassesCounter.Add(1); // Один обход
+        CountingEnumerable<TestData>.ResetCounters();
+        var countingData = new CountingEnumerable<TestData>(_testData);
         
         var dict = new Dictionary<string, int>();
-        foreach (var item in _testData)
+        foreach (var item in countingData)
         {
             dict.TryGetValue(item.Category, out int count);
             dict[item.Category] = count + 1;
         }
-        
-        MemoryAllocationsCounter.Add(GC.GetTotalAllocatedBytes(true));
-        AllocationsCountCounter.Add(1);
-        
+            
+        LogCollectionPasses("CountBy_Manual", CountingEnumerable<TestData>.EnumeratorCount);
         return dict;
     }
 }

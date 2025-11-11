@@ -15,11 +15,11 @@ Write-Host "Building and running benchmarks..." -ForegroundColor Green
 
 # Останавливаем и пересобираем контейнеры
 docker-compose stop benchmark-net8 benchmark-net9
-docker-compose build --no-cache
+docker-compose build --no-cache benchmark-net8 benchmark-net9
 
 if ($Target -eq "all" -or $Target -eq "net8") {
     Write-Host "`nRunning .NET 8 benchmarks..." -ForegroundColor Yellow
-    docker-compose exec benchmark-net8 dotnet run --project Benchmarks
+    docker-compose run --rm benchmark-net8
 }
 
 if ($Target -eq "all" -or $Target -eq "net9") {
@@ -28,5 +28,11 @@ if ($Target -eq "all" -or $Target -eq "net9") {
 }
 
 Write-Host "`nBenchmark completed!" -ForegroundColor Green
-Write-Host "Check Grafana for real-time metrics: http://localhost:3001" -ForegroundColor Cyan
+
+# Показываем логи обходов коллекции
+Write-Host "`nCollection Passes Results:" -ForegroundColor Cyan
+docker-compose logs benchmark-net8 | findstr "Collection Passes"
+docker-compose logs benchmark-net9 | findstr "Collection Passes"
+
+Write-Host "`nCheck Grafana for real-time metrics: http://localhost:3001" -ForegroundColor Cyan
 Write-Host "Check Prometheus for raw data: http://localhost:9090" -ForegroundColor Cyan

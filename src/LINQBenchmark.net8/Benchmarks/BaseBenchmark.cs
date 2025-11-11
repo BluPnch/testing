@@ -27,4 +27,10 @@ public abstract class BaseBenchmark
     {
         _testData = DataGenerator.GenerateTestData(DataSize);
     }
+    
+    protected void LogCollectionPasses(string method, int passes)
+    {
+        var logPath = Path.Combine(Directory.GetCurrentDirectory(), "collection_passes.log");
+        File.AppendAllText(logPath, $"{DateTime.Now:HH:mm:ss} {method} - Collection Passes: {passes}\n");
+    }
 }

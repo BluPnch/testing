@@ -70,3 +70,10 @@ container_memory_working_set_bytes{container=~"linq-net.*"}
 # Количество сборок GC по поколениям
 rate(container_memory_failures_total{container=~"linq-net.*", scope="container"}[5m])
 
+
+# Разница в памяти
+container_memory_usage_bytes{container="linq-net8"} - container_memory_usage_bytes{container="linq-net9"}
+# Разница в CPU (производительность)
+rate(container_cpu_user_seconds_total{container="linq-net8"}[5m]) / rate(container_cpu_user_seconds_total{container="linq-net9"}[5m])
+# Разница в GC сборках (аллокации)
+rate(container_memory_failures_total{container="linq-net8"}[5m]) - rate(container_memory_failures_total{container="linq-net9"}[5m])

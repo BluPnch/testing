@@ -1,7 +1,7 @@
 ﻿using BenchmarkDotNet.Attributes;
+using LINQBenchmark.Helpers;
+using LINQBenchmark.Models;
 
-using System.Diagnostics;
-using System.Diagnostics.Metrics;
 
 namespace LINQBenchmark.net9.Benchmarks;
 
@@ -10,30 +10,28 @@ public class CountByBenchmark : BaseBenchmark
     [Benchmark(Baseline = true)]
     public Dictionary<string, int> CountBy_GroupBy()
     {
-        CollectionPassesCounter.Add(2); // GroupBy + ToDictionary
+        CountingEnumerable<TestData>.ResetCounters();
+        var countingData = new CountingEnumerable<TestData>(_testData);
         
-        var result = _testData
+        var result = countingData
             .GroupBy(x => x.Category)
             .ToDictionary(g => g.Key, g => g.Count());
             
-        MemoryAllocationsCounter.Add(GC.GetTotalAllocatedBytes(true));
-        AllocationsCountCounter.Add(1);
-        
+        LogCollectionPasses("CountBy_GroupBy", CountingEnumerable<TestData>.EnumeratorCount);
         return result;
     }
 
     [Benchmark]
     public Dictionary<string, int> CountBy_Net9()
     {
-        CollectionPassesCounter.Add(1); // CountBy один обход
+        CountingEnumerable<TestData>.ResetCounters();
+        var countingData = new CountingEnumerable<TestData>(_testData);
         
-        var result = _testData
+        var result = countingData
             .CountBy(x => x.Category)
             .ToDictionary(x => x.Key, x => x.Value);
             
-        MemoryAllocationsCounter.Add(GC.GetTotalAllocatedBytes(true));
-        AllocationsCountCounter.Add(1);
-        
+        LogCollectionPasses("CountBy_Net9", CountingEnumerable<TestData>.EnumeratorCount);
         return result;
     }
 }
