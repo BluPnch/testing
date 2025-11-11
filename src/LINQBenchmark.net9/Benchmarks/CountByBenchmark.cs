@@ -2,7 +2,6 @@
 using LINQBenchmark.Helpers;
 using LINQBenchmark.Models;
 
-
 namespace LINQBenchmark.net9.Benchmarks;
 
 public class CountByBenchmark : BaseBenchmark
@@ -17,7 +16,21 @@ public class CountByBenchmark : BaseBenchmark
             .GroupBy(x => x.Category)
             .ToDictionary(g => g.Key, g => g.Count());
             
-        LogCollectionPasses("CountBy_GroupBy", CountingEnumerable<TestData>.EnumeratorCount);
+        LogCollectionPasses("CountBy_GroupBy", CountingEnumerable<TestData>.EnumeratorCount, "net9");
+        return result;
+    }
+
+    [Benchmark]
+    public Dictionary<string, int> CountBy_ToLookup()
+    {
+        CountingEnumerable<TestData>.ResetCounters();
+        var countingData = new CountingEnumerable<TestData>(_testData);
+        
+        var result = countingData
+            .ToLookup(x => x.Category)
+            .ToDictionary(g => g.Key, g => g.Count());
+            
+        LogCollectionPasses("CountBy_ToLookup", CountingEnumerable<TestData>.EnumeratorCount, "net9");
         return result;
     }
 
@@ -31,7 +44,7 @@ public class CountByBenchmark : BaseBenchmark
             .CountBy(x => x.Category)
             .ToDictionary(x => x.Key, x => x.Value);
             
-        LogCollectionPasses("CountBy_Net9", CountingEnumerable<TestData>.EnumeratorCount);
+        LogCollectionPasses("CountBy_Net9", CountingEnumerable<TestData>.EnumeratorCount, "net9");
         return result;
     }
 }

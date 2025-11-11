@@ -2,7 +2,6 @@
 using LINQBenchmark.Helpers;
 using LINQBenchmark.Models;
 
-
 namespace LINQBenchmark.net8.Benchmarks;
 
 public class AggregateByBenchmark : BaseBenchmark
@@ -17,7 +16,7 @@ public class AggregateByBenchmark : BaseBenchmark
             .GroupBy(x => x.Category)
             .ToDictionary(g => g.Key, g => g.Sum(x => x.Value));
             
-        LogCollectionPasses("AggregateBy_GroupBy", CountingEnumerable<TestData>.EnumeratorCount);
+        LogCollectionPasses("AggregateBy_GroupBy", CountingEnumerable<TestData>.EnumeratorCount, "net8");
         return result;
     }
 
@@ -34,7 +33,7 @@ public class AggregateByBenchmark : BaseBenchmark
                 g => g.Aggregate(0m, (total, item) => total + item.Value)
             );
             
-        LogCollectionPasses("AggregateBy_Aggregate", CountingEnumerable<TestData>.EnumeratorCount);
+        LogCollectionPasses("AggregateBy_Aggregate", CountingEnumerable<TestData>.EnumeratorCount, "net8");
         return result;
     }
 
@@ -49,7 +48,7 @@ public class AggregateByBenchmark : BaseBenchmark
             .Select(g => new { Key = g.Key, Sum = g.Sum(x => x.Value) })
             .ToDictionary(x => x.Key, x => x.Sum);
             
-        LogCollectionPasses("AggregateBy_Select", CountingEnumerable<TestData>.EnumeratorCount);
+        LogCollectionPasses("AggregateBy_Select", CountingEnumerable<TestData>.EnumeratorCount, "net8");
         return result;
     }
 }

@@ -77,3 +77,9 @@ container_memory_usage_bytes{container="linq-net8"} - container_memory_usage_byt
 rate(container_cpu_user_seconds_total{container="linq-net8"}[5m]) / rate(container_cpu_user_seconds_total{container="linq-net9"}[5m])
 # Разница в GC сборках (аллокации)
 rate(container_memory_failures_total{container="linq-net8"}[5m]) - rate(container_memory_failures_total{container="linq-net9"}[5m])
+
+
+# Первый
+.\scripts\run-benchmarks.ps1
+# Все последующие
+.\scripts\run-benchmarks.ps1 -Fast $true

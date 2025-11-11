@@ -1,6 +1,8 @@
 ﻿using BenchmarkDotNet.Running;
 using LINQBenchmark.net8.Benchmarks;
 using System.Text.Json;
+using BenchmarkDotNet.Configs;
+
 
 namespace LINQBenchmark.Runner.net8;
 
@@ -8,6 +10,15 @@ class Program
 {
     static void Main(string[] args)
     {
+        bool quickMode = args.Contains("--quick") || args.Contains("-q");
+    
+        if (quickMode)
+        {
+            Console.WriteLine("=== QUICK MODE - Reduced iterations ===");
+            // Можно передать параметры в BenchmarkDotNet
+            var config = DefaultConfig.Instance.WithOption(ConfigOptions.DisableOptimizationsValidator, true);
+        }
+        
         try
         {
             Console.WriteLine("=== LINQ Performance Benchmark .NET 8 ===");
@@ -35,9 +46,6 @@ class Program
 
             SaveResults(results);
             Console.WriteLine("All benchmarks completed!");
-            
-            // Ждем чтобы cAdvisor собрал финальные метрики
-            Thread.Sleep(30000);
         }
         catch (Exception ex)
         {
